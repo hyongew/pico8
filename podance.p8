@@ -1,0 +1,137 @@
+pico-8 cartridge // http://www.pico-8.com
+version 43
+__lua__
+function _init()
+ poke(0x5f2e, 1)
+ pal(9,9+128,1)
+ palt(0,false)
+ palt(14,true)
+ state="go"--main,rdy,go
+ sps={} --{spr,x,y}
+ stage,step,score,f=1,0,0,0
+ movesp,checkstep=nil,1
+ moves={
+  {⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
+  {⬆️,➡️,⬆️,⬅️,⬇️,⬆️,➡️,⬇️},
+  {⬅️,⬅️,➡️,⬆️,⬅️,⬇️,⬆️,➡️},
+  {⬆️,⬇️,⬅️,⬆️,⬇️,⬆️,➡️,➡️},
+  {➡️,⬅️,⬇️,⬅️,⬆️,⬅️,➡️,⬇️}
+ }
+ correct=nil
+end
+
+function _update()
+	if state=="main" then
+	elseif state=="rdy" then
+	elseif state=="go" then
+		f+=1
+		if f\10!=step then
+			step+=1
+	 	correct=nil
+			if step==17 then
+				step=1
+				f=11
+				sps={}
+			end
+			if step<9 then
+				sfx(0)
+				add(sps,
+								{
+									moves[stage][step]*2+1,
+									getx(step),
+									gety(step)
+								})
+			else
+				sfx(0)
+			end
+		end
+		if step>=9 then
+		 if checktime() then
+		 	if correct==nil then
+		 		movesp=checkmove(moves[stage][checkstep]) or move
+		 	end
+	 	else
+	 		checkstep=step-7
+	 		if (checkstep==9) checkstep=1
+	 		if (correct!=true) movesp=9
+		 end
+		end
+	else
+	end
+end
+
+function _draw()
+	cls()
+ print(step)
+	if state=="main" then
+	elseif state=="rdy" then
+	elseif state=="go" then
+		for i=1,8 do
+			drawsq(getx(i),gety(i),7)
+		end
+	
+		--draw steps
+		for i,sp in pairs(sps) do
+			local c=7
+			if i==count(sps) and
+			step<9 then
+		 	c=11
+			end
+			drawsq(sp[2],sp[3],c)
+			spr(sp[1],sp[2],sp[3],2,2)	
+		end
+		
+		--draw player
+		drawsq(57,88,7)
+		if movesp then
+			spr(movesp,57,88,2,2)
+		end
+	end
+end
+-->8
+--utils
+function drawsq(x,y,c)
+	rect(x-2,y+8,x+16,y+17,c)
+end
+
+function getx(step)
+ return ceil(step%4.1)*21+4
+end
+
+function gety(step)
+ return (step\4.1+1)*16+32
+end
+
+function checktime()
+	return f%10>6 or f%10<4
+end
+-->8
+function checkmove(m)
+	if btnp()>0 then
+		correct=btnp(m)
+		if not btnp(m) then
+	 	return 9
+	 else
+	 	return m*2+1
+	 end
+	end
+end
+__gfx__
+00000000eeee11411eeeeeeeeeeeee11411eeeeeeeeee114111eeeeeeeeee111411eeeeeeeeeeeeeeeeeeeee0000000000000000000000000000000000000000
+00000000eee19999411eeeeeeeee11999941eeeeeeee19999941eeeeeeee19999941eeeeeeeeeee555e11eee0000000000000000000000000000000000000000
+00700700ee1999999401eeeeeee1099999941eeeeee1999999941eeeeee1999999941eeee5555eeee55541ee0000000000000000000000000000000000000000
+00077000ee19999994001eeeee10099999991eeeee19990499991eeeee19999999991eee555ee11110041eee0000000000000000000000000000000000000000
+00077000e199999999401eeeee109999999941eeee199004999941eeee199999999941eeeee11009909661ee0000000000000000000000000000000000000000
+00700700e199909999401eeeee109999909941eee1999004999941eee1990999990991eeee1770007799761e0000000000000000000000000000000000000000
+00000000e100999999441eeeee199999999001eee1999904999941eee1999900099991eee19990999979961e0000000000000000000000000000000000000000
+00000000e199999999941eeeee199999999941eee1999999999941eee1999999999991ee199999999997941e0000000000000000000000000000000000000000
+00000000e177999999761eeeee177999999761eee1779999999761eee1779999999771ee199449955597941e0000000000000000000000000000000000000000
+00000000e191777777401eeeee109777777141eee19977777779441ee1997777777991ee199499999555741e0000000000000000000000000000000000000000
+00000000e1199999994001eee1009999999911eee1999904999941eee1191999991911ee199999999999741e0000000000000000000000000000000000000000
+00000000e19919999971941e19417999991941eeee179004999961eee1611999991161ee199999999999741e0000000000000000000000000000000000000000
+00000000ee1177777799941e1999977777711eeeee197706777741eeee146777776441eee15599990997941e0000000000000000000000000000000000000000
+00000000e1499999994111eee1119999999941eeeee1119419991eeee1941999991941ee555999999915541e0000000000000000000000000000000000000000
+00000000ee111111111eeeeeeeee111111111eeeeee199411111eeeeee11111111111eeeeee1111111ee555e0000000000000000000000000000000000000000
+00000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee111eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee0000000000000000000000000000000000000000
+__sfx__
+000100003302000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
