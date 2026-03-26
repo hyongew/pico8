@@ -6,9 +6,9 @@ function _init()
  pal(9,9+128,1)
  palt(0,false)
  palt(14,true)
- state="main"--main,rdy,go
+ state="rdy" --main,rdy,go
  sps={} --{spr,x,y}
- stage,round,step,score,f=1,0,0,0,0
+ stage,round,step,score,f=1,1,0,0,0
  movesp,checkstep=nil,1
  moves={
   {⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
@@ -18,12 +18,14 @@ function _init()
  }
  correct,sounded=nil,false
  smoke={}
+ countdown=false
 end
 
 function _update()
 	if state=="main" then
 		if (btnp(🅾️)) state="go"
 	elseif state=="rdy" then
+		updaterdy()
 	elseif state=="go" then
 		updategame()
 	else
@@ -35,6 +37,7 @@ function _draw()
 	if state=="main" then
 		print("press 🅾️ to start")
 	elseif state=="rdy" then
+		drawrdy()
 	elseif state=="go" then
 		drawgame()
 	end
@@ -73,7 +76,7 @@ function checkerr()
 	if not sounded then
 		sfx(1)
 		sounded=true
-		-- draw smoke
+		--draw smoke
   for i=1,20 do
    add(smoke,{x=64,y=100,
        dx=rnd(3)-1.5,dy=rnd(2)-1,
@@ -86,15 +89,34 @@ end
 --main game loop
 
 function updategame()
+	f+=1
+	
+	--gameplay
 	if round<5 then
-		--demo move
-		if step>0 and step<9 then
-			add(sps,
-							{
-								moves[round][step]*2+1,
-								getx(step),
-								gety(step)
-							})
+		--update step
+		if f\10!=step-1 then
+			step+=1
+ 		correct=nil
+ 		sounded=false
+			if step==17 then
+				round+=1
+				step=1
+				f=0
+				sps={}
+			end
+			
+			if (round<5) sfx(0)
+		
+			--demo move 
+			if round<5 and step<9 then
+				add(sps,
+								{
+									moves[round][step]*2+1,
+									getx(step),
+									gety(step)
+								})
+			end
+	
 		end
 		
 		--user move
@@ -114,25 +136,11 @@ function updategame()
 		 end
 		end
 		
-		--update step
-		f+=1
-		if f\10!=step then
-			if (step==0) round+=1
-			sfx(0)
-			step+=1
- 		correct=nil
- 		sounded=false
-			if step==17 then
-				round+=1
-				step=1
-				f=11
-				sps={}
-			end
-		end
-		
-	else
-	--round end
-	
+	--stage end
+	elseif f==50 then
+		f=0
+		stage+=1
+		state="rdy"
 	end
 	
 	--update smoke
@@ -184,6 +192,42 @@ function drawgame()
 end
 -->8
 --intermissions
+
+function updaterdy()
+	if not countdown then
+		countdown=btnp(🅾️)
+	else
+		if f<80 then
+			f+=1
+		else
+			countdown=false
+			round,step,f=1,0,0
+			state="go"
+		end
+	end
+end
+
+function drawrdy()
+	if not countdown then
+		print("press 🅾️ to start")
+	else
+		if f<60 then
+			print(3-f\20)
+		else
+			print("go!")
+		end
+	end
+end
+-->8
+--main menu
+
+function updatemenu()
+
+end
+
+function drawmenu()
+
+end
 __gfx__
 00000000eeee11411eeeeeeeeeeeee11411eeeeeeeeee114111eeeeeeeeee111411eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
 00000000eee19999411eeeeeeeee11999941eeeeeeee19999941eeeeeeee19999941eeeeeeeeeeeeeee11eeeeeeeeeeeeeeeeeee000000000000000000000000
@@ -203,5 +247,5 @@ __gfx__
 00000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee111eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
 __sfx__
 010100003303000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0105000014031110330d0330d03300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000000000000000
+0105000014051110530d0530d05300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000000000000000
 011000001d0551a0550000515055110550c0550805504055000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005
