@@ -7,18 +7,21 @@ function _init()
  palt(0,false)
  palt(14,true)
  state="rdy" --main,rdy,go
- sps={} --{spr,x,y}
+ moves={} --{sp,x,y}
  stage,round,step,score,f=1,1,0,0,0
  movesp,checkstep=nil,1
- moves={
-  {⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
-  {⬆️,➡️,⬆️,⬅️,⬇️,⬆️,➡️,⬇️},
-  {⬅️,⬅️,➡️,⬆️,⬅️,⬇️,⬆️,➡️},
+ movesets={
+  --{⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
+  --{⬆️,➡️,⬆️,⬅️,⬇️,⬆️,➡️,⬇️},
+  --{⬅️,⬅️,➡️,⬆️,⬅️,⬇️,⬆️,➡️},
   {⬆️,⬇️,⬅️,⬆️,⬇️,⬆️,➡️,➡️}
  }
+ rot_anim_map={2,3,1,0}
+ stageend=#movesets+1
  correct,sounded=nil,false
  smoke={}
  countdown=false
+ anim_end=24 --#moves*2+8
 end
 
 function _update()
@@ -34,6 +37,9 @@ end
 
 function _draw()
 	cls()
+	color(15)
+	rectfill(0,0,128,128)
+	color(2)
 	if state=="main" then
 		print("press 🅾️ to start")
 	elseif state=="rdy" then
@@ -46,6 +52,10 @@ end
 --utils
 function drawsq(x,y,c)
 	rect(x-2,y+8,x+16,y+17,c)
+end
+
+function getsp(m)
+	return m*2+1
 end
 
 function getx(step)
@@ -67,7 +77,7 @@ function checkmove(m)
 			checkerr()
 	 	return 9
 	 else
-	 	return m*2+1
+	 	return getsp(m)
 	 end
 	end
 end
@@ -92,38 +102,41 @@ function updategame()
 	f+=1
 	
 	--gameplay
-	if round<5 then
+	if round<stageend then
 		--update step
 		if f\10!=step-1 then
-			step+=1
  		correct=nil
  		sounded=false
+			step+=1
+			
 			if step==17 then
 				round+=1
 				step=1
 				f=0
-				sps={}
 			end
-			
-			if (round<5) sfx(0)
-		
-			--demo move 
-			if round<5 and step<9 then
-				add(sps,
-								{
-									moves[round][step]*2+1,
-									getx(step),
-									gety(step)
-								})
+ 		
+ 		if round<stageend then
+				sfx(0)
+				
+				if (step==1) moves={}
+				
+				--demo move
+				if step<9 then
+					add(moves,
+									{
+										sp=getsp(movesets[round][step]),
+										x=getx(step),
+										y=gety(step)
+									})
+				end
 			end
-	
 		end
 		
 		--user move
 		if step>=9 then
 		 if checktime() then
 	 		if correct==nil then
-	 			movesp=checkmove(moves[round][checkstep]) or movesp
+	 			movesp=checkmove(movesets[round][checkstep]) or movesp
 	 		end
  		else
  			checkstep=step-7
@@ -138,49 +151,91 @@ function updategame()
 		
 	--stage end
 	elseif f==1 then
+		step=0
+		for move in all(moves) do
+			move.sp=7
+		end
+		movesp=7
 		sfx(3)
 		sfx(4)
-	elseif f==50 then
+	elseif f==150 then
 		f=0
 		stage+=1
 		state="rdy"
+		moves={}
+	else
+		local spd=42
+		local fspd=3
+		
+		--rotate the potate
+		if f\fspd!=step-1 then
+			step+=1
+			
+			for i,move in pairs(moves) do
+				if (step==i*2)	move.dy=-spd
+				
+				if step>anim_end then
+					move.sp=7
+				else
+					move.sp=getsp(rot_anim_map[(move.sp-1)/2+1])
+				end
+			end
+			--if step>anim_end then
+			--	movesp=getsp(rot_anim_map[(movesp-1)/2+1])
+			--end
+		end
+		
+		--jump for joy
+		for move in all(moves) do
+			if move.dy and move.dy<=spd do
+				--doing it this way because of strange decimal shenanigans when working directly with decimals
+				local y=move.y*10
+				y+=move.dy
+				move.dy+=fspd*2
+				move.y=ceil(y)/10
+			end
+		end
 	end
 	
 	--update smoke
-	local mult= round<5 and 0.8 or 0.2
+	local mult= round<stageend and 0.8 or 0.2
 	for p in all(smoke) do
   p.x+=p.dx*mult
   p.y+=p.dy*mult
-  p.act-= round<5 and 1 or 0.2
+  p.act-= round<stageend and 1 or 0.2
   if (p.act<0) del(smoke,p)
  end
 end
 
 
 function drawgame()
-	print(step)
+	color(7)
+	--print(step)
 	print("round "..round)
 	print(score.."/32")
-	if (round==5) print("done!")
+	if (round==stageend) print("done!")
 	
 	--draw base 2x4 grid
 	for i=1,8 do
 		local c=7
-		if (ceil(step%8.1)==i) c=12
+		if (round<stageend and ceil(step%8.1)==i) c=12
 		drawsq(getx(i),gety(i),c)
 	end
 	
 	--draw steps
-	for i,sp in pairs(sps) do
-		--rectfill(sp[2]-1,sp[3]-2,sp[2]+15,sp[3]+16,6)
-		--rect(sp[2]-1,sp[3]-2,sp[2]+15,sp[3]+16,13)
-		spr(sp[1],sp[2],sp[3],2,2)
-		--spr(11,sp[2],sp[3],2,2)
+	for move in all(moves) do
+		--rectfill(move.x-1,move.y-2,move.x+15,move.y+16,6)
+		--rect(move.x-1,move.y-2,move.x+15,move.y+16,13)
+		spr(move.sp,move.x,move.y,2,2)
+		--spr(11,move.x,move.y,2,2)
 	end
 	
 	--draw player
 	drawsq(57,88,7)
-	if f%10<4 and step>=9 and movesp then
+	if round<stageend
+	and f%10<4
+	and step>=9
+	and movesp then
 		local c= movesp==9 and 8 or 11
 		drawsq(57,88,c)
 	end
@@ -192,6 +247,10 @@ function drawgame()
 	for p in all(smoke) do
   circfill(p.x,p.y,p.r,p.c)
  end
+ 
+	if round==stageend and step>anim_end then
+		print("\^w\^t\^o014".."stage end!",25,24,7)
+	end
 end
 -->8
 --intermissions
@@ -252,5 +311,5 @@ __sfx__
 010100003303000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0105000014051110530d0530d05300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000030000300003000000000000000
 011000001d0551a0550000515055110550c0550805504055000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005
-010800002d7302d7302d730007002d730007002d730007002d730247002e7302e730247002e7302e730247002e7302e730247002d7302d7302d73000700007000070000700007000070000700007000070000700
-01080000000000000000000000000c0700000011070000000c070000000f0700f070000000f0700f0700000010070100700000011070110701107000000000000000000000000000000000000000000000000000
+010800002d3502d3502d3502d350003002d340003002d340003002d340243002e3402e340243002e3402e340243002e3402e340243002d3402d3402d340003000030000300003000030000300003000030000300
+010800002d4302d4302d4302d4300040018420004001d4200040018420004001b4201b420004001b4201b420004001c4201c420004001d4201d4201d420004000040000400004000040000400004000040000400
