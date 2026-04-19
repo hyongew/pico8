@@ -6,7 +6,8 @@ function _init()
  pal(9,9+128,1)
  palt(0,false)
  palt(14,true)
- state="rdy" --main,rdy,go
+ style,style_l="\^o016","\^w\^t\^o014"
+ state="hold" --main,tut,hold,quit,rdy,go
  moves={} --{sp,x,y}
  stage,round,step,score,f=1,1,0,0,0
  movesp,checkstep=nil,1
@@ -20,18 +21,43 @@ function _init()
  stageend=#movesets+1
  correct,sounded=nil,false
  smoke={}
- countdown=false
  anim_end=24 --#moves*2+8
 end
 
 function _update()
 	if state=="main" then
 		if (btnp(🅾️)) state="go"
+		if (btnp(❎)) state="tut"
+		
+	elseif state=="tut" then
+		if (btnp(❎)) state="main"
+		
+	elseif state=="hold" then
+		if (btnp(🅾️)) state="rdy"
+		if (btnp(❎)) state="quit"
+		
+	elseif state=="quit" then
+		if (btnp(🅾️)) state="hold"
+		if (btnp(❎)) state="main"
+		
 	elseif state=="rdy" then
-		updaterdy()
+		if f<80 then
+			f+=1
+		else
+			round,step,f=1,0,0
+			state="go"
+		end
+		
+		if f==1
+		or f==21
+		or f==41 then
+			sfx(5)
+		elseif f==61 then
+			sfx(6)
+		end
+		
 	elseif state=="go" then
 		updategame()
-	else
 	end
 end
 
@@ -39,60 +65,21 @@ function _draw()
 	cls()
 	color(15)
 	rectfill(0,0,128,128)
-	color(2)
+	color(7)
 	if state=="main" then
 		print("press 🅾️ to start")
+	elseif state=="tut" then
+	elseif state=="hold" then
+		print(style.."🅾️ start     ❎ quit",22,106)
+	elseif state=="quit" then
 	elseif state=="rdy" then
-		drawrdy()
+		if f<60 then
+			print(style_l..3-f\20,60,40)
+		else
+			print(style_l.."go!",55,40)
+		end
 	elseif state=="go" then
 		drawgame()
-	end
-end
--->8
---utils
-function drawsq(x,y,c)
-	rect(x-2,y+8,x+16,y+17,c)
-end
-
-function getsp(m)
-	return m*2+1
-end
-
-function getx(step)
- return ceil(step%4.1)*21+4
-end
-
-function gety(step)
- return (step\4.1+1)*16+32
-end
-
-function checktime()
-	return f%10>6 or f%10<4
-end
-
-function checkmove(m)
-	if btnp()>0 then
-		correct=btnp(m)
-		if not btnp(m) then
-			checkerr()
-	 	return 9
-	 else
-	 	return getsp(m)
-	 end
-	end
-end
-
-function checkerr()
-	if not sounded then
-		sfx(1)
-		sounded=true
-		--draw smoke
-  for i=1,20 do
-   add(smoke,{x=64,y=100,
-       dx=rnd(3)-1.5,dy=rnd(2)-1,
-       r=rnd(2),act=15,
-       c=rnd({5,6,2,0})})
-  end
 	end
 end
 -->8
@@ -134,10 +121,12 @@ function updategame()
 		
 		--user move
 		if step>=9 then
-		 if checktime() then
+			--input timeframe
+		 if f%10>6 or f%10<4 then
 	 		if correct==nil then
 	 			movesp=checkmove(movesets[round][checkstep]) or movesp
 	 		end
+	 	--check input
  		else
  			checkstep=step-7
  			if (correct==true and f%10==4) score+=1
@@ -161,7 +150,7 @@ function updategame()
 	elseif f==150 then
 		f=0
 		stage+=1
-		state="rdy"
+		state="hold"
 		moves={}
 	else
 		local spd=42
@@ -180,15 +169,13 @@ function updategame()
 					move.sp=getsp(rot_anim_map[(move.sp-1)/2+1])
 				end
 			end
-			--if step>anim_end then
-			--	movesp=getsp(rot_anim_map[(movesp-1)/2+1])
-			--end
 		end
 		
 		--jump for joy
 		for move in all(moves) do
 			if move.dy and move.dy<=spd do
-				--doing it this way because of strange decimal shenanigans when working directly with decimals
+				--[[doing it this way because of strange
+				behaviour when working with decimals]]
 				local y=move.y*10
 				y+=move.dy
 				move.dy+=fspd*2
@@ -249,46 +236,51 @@ function drawgame()
  end
  
 	if round==stageend and step>anim_end then
-		print("\^w\^t\^o014".."stage end!",25,24,7)
+		print(style_l.."stage end!",27,24,7)
 	end
 end
 -->8
---intermissions
+--utils
+function drawsq(x,y,c)
+	rect(x-2,y+8,x+16,y+17,c)
+end
 
-function updaterdy()
-	if not countdown then
-		countdown=btnp(🅾️)
-	else
-		if f<80 then
-			f+=1
-		else
-			countdown=false
-			round,step,f=1,0,0
-			state="go"
-		end
+function getsp(m)
+	return m*2+1
+end
+
+function getx(step)
+ return ceil(step%4.1)*21+4
+end
+
+function gety(step)
+ return (step\4.1+1)*16+32
+end
+
+function checkmove(m)
+	if btnp()>0 then
+		correct=btnp(m)
+		if not btnp(m) then
+			checkerr()
+	 	return 9
+	 else
+	 	return getsp(m)
+	 end
 	end
 end
 
-function drawrdy()
-	if not countdown then
-		print("press 🅾️ to start")
-	else
-		if f<60 then
-			print(3-f\20)
-		else
-			print("go!")
-		end
+function checkerr()
+	if not sounded then
+		sfx(1)
+		sounded=true
+		--draw smoke
+  for i=1,20 do
+   add(smoke,{x=64,y=100,
+       dx=rnd(3)-1.5,dy=rnd(2)-1,
+       r=rnd(2),act=15,
+       c=rnd({5,6,2,0})})
+  end
 	end
-end
--->8
---main menu
-
-function updatemenu()
-
-end
-
-function drawmenu()
-
 end
 __gfx__
 00000000eeee11411eeeeeeeeeeeee11411eeeeeeeeee114111eeeeeeeeee111411eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
@@ -313,3 +305,5 @@ __sfx__
 011000001d0551a0550000515055110550c0550805504055000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005
 010800002d3502d3502d3502d350003002d340003002d340003002d340243002e3402e340243002e3402e340243002e3402e340243002d3402d3402d340003000030000300003000030000300003000030000300
 010800002d4302d4302d4302d4300040018420004001d4200040018420004001b4201b420004001b4201b420004001c4201c420004001d4201d4201d420004000040000400004000040000400004000040000400
+011600001f0501f050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001600002405024050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
