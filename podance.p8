@@ -6,51 +6,48 @@ function _init()
  pal(9,9+128,1)
  palt(0,false)
  palt(14,true)
- --style,style_l="\^o916","\^w\^t\^o914"
- state="hold" --main,tut,hold,quit,rdy,go
- moves={} --{sp,x,y}
- stage,round,step,score,f=1,1,0,0,0
- movesp,checkstep=nil,1
- movesets={
-  --{⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
-  --{⬆️,➡️,⬆️,⬅️,⬇️,⬆️,➡️,⬇️},
-  --{⬅️,⬅️,➡️,⬆️,⬅️,⬇️,⬆️,➡️},
-  {⬆️,⬇️,⬅️,⬆️,⬇️,⬆️,➡️,➡️}
- }
- rot_anim_map={2,3,1,0}
- stageend=#movesets+1
- correct,sounded=nil,false
+ --style,style_l=
+ --"\^o916","\^w\^t\^o914"
+ 
+ --[[main,tut,hold,quit,
+ 				rdy,go,fin]]
+ state="main"
+ stage,round,step,score,f=
+ 1,1,0,0,0
+ --moves={sp,x,y}
+ --movesets={dir,hide,flip}
+ moves,movesets,movesp,movenum=
+ {},{},nil,1
+ inround,correct,sounded=
+ false,nil,false
+ rotanim,animend=
+ {2,3,1,0},24 --#moves*2+8
  smoke={}
- anim_end=24 --#moves*2+8
+ 
+ --test curtain anim
  frame,step2=33,0 --17-25
 end
 
 function _update()
 	if state=="main" then
-		if (btnp(🅾️)) state="go"
+		if btnp(🅾️) then
+			createmovesets()
+			state="rdy"
+		end
 		if (btnp(❎)) state="tut"
 		
 	elseif state=="tut" then
-		if (btnp(❎)) state="main"
+		testcurtainanim()
+		if btnp(❎) then
+			frame,step2=33,0
+			state="main"
+		end
 		
 	elseif state=="hold" then
 		if (btnp(🅾️)) state="rdy"
 		if (btnp(❎)) state="quit"
 		
 	elseif state=="quit" then
-		if step2<6 then
-			f+=1
-		
-			if f\3!=step2-1 then
-				if (step2==1) frame=33
-				if (step2==2) frame=35
-				if (step2==3) frame=37
-				if (step2==4) frame=39
-				if (step2==5) frame=41
-				step2+=1
-			end
-		end
-		
 		if (btnp(🅾️)) state="hold"
 		if (btnp(❎)) state="main"
 		
@@ -59,6 +56,7 @@ function _update()
 			f+=1
 		else
 			round,step,f=1,0,0
+			inround=true
 			state="go"
 		end
 		
@@ -72,6 +70,10 @@ function _update()
 		
 	elseif state=="go" then
 		updategame()
+		
+	elseif state=="fin" then
+		if (btnp(🅾️)) state="main"
+		if (btnp(❎)) state="main"
 	end
 end
 
@@ -81,56 +83,84 @@ function _draw()
 	rectfill(0,0,128,128)
 	color(2)
 	if state=="main" then
-		print("press 🅾️ to start")
+		print("podance")
+		print(
+			"🅾️ start       ❎ tut",
+			22,106
+		)
+	
 	elseif state=="tut" then
-	elseif state=="hold" then
-		print("🅾️ start      ❎ quit",22,106)
-	elseif state=="quit" then
+		print("tut")
 		spr(frame,60,60,2,2)
+		print("❎ main",50,106)
+	
+	elseif state=="hold" then
+		print("hold")
+		print(
+			"🅾️ start      ❎ quit",
+			22,106
+		)
+	
+	elseif state=="quit" then
+		print("quit")
+		print(
+			"🅾️ back      ❎ quit",
+			23,106
+		)
+	
 	elseif state=="rdy" then
 		if f<60 then
 			print(3-f\20,60,40)
 		else
 			print("go!",55,40)
 		end
+	
 	elseif state=="go" then
 		drawgame()
+		
+	elseif state=="fin" then
+		print("fin")
+		print("🅾️ main",50,106)
 	end
 end
 -->8
 --main game loop
 
 function updategame()
-	f+=1
-	
 	--gameplay
-	if round<stageend then
+	if inround then
 		--update step
-		if f\10!=step-1 then
+		if f%10==0 then
  		correct=nil
  		sounded=false
 			step+=1
 			
+			--next round
 			if step==17 then
 				round+=1
 				step=1
 				f=0
 			end
+			
+ 		if round==#movesets+1 then
+ 			inround=false
+ 			return
+ 		end
  		
- 		if round<stageend then
-				sfx(0)
-				
-				if (step==1) moves={}
-				
-				--demo move
-				if step<9 then
-					add(moves,
-									{
-										sp=getsp(movesets[round][step]),
-										x=getx(step),
-										y=gety(step)
-									})
-				end
+			if (step==1) moves={}
+ 		
+			sfx(0)
+			
+			--demo move
+			if step<9 then
+				add(moves,
+								{
+									sp=getsp(
+										movesets[round][step]
+									),
+									x=getx(step),
+									y=gety(step)
+								})
 			end
 		end
 		
@@ -139,81 +169,107 @@ function updategame()
 			--input timeframe
 		 if f%10>6 or f%10<4 then
 	 		if correct==nil then
-	 			movesp=checkmove(movesets[round][checkstep]) or movesp
+	 			movesp=checkmove(
+	 				movesets[round][movenum]
+	 			)
 	 		end
 	 	--check input
  		else
- 			checkstep=step-7
- 			if (correct==true and f%10==4) score+=1
- 			if (checkstep==9) checkstep=1
+ 			if correct==true
+ 			and f%10==4 then
+ 				score+=1
+ 			end
+ 			
  			if correct!=true then
  				checkerr()
  				movesp=9
  			end
+ 			
+ 			movenum=step-7
+ 			if (movenum==9) movenum=1
 		 end
 		end
 		
 	--stage end
-	elseif f==1 then
-		step=0
-		for move in all(moves) do
-			move.sp=7
-		end
-		movesp=7
-		sfx(3)
-		sfx(4)
-	elseif f==150 then
-		f=0
-		stage+=1
-		state="hold"
-		moves={}
 	else
+		--init end sequence
+		if f==0 then
+			step=1
+			for move in all(moves) do
+				move.sp=7
+			end
+			movesp=7
+			sfx(3)
+			sfx(4)
+		end
+		
 		local spd=42
 		local fspd=3
 		
 		--rotate the potate
-		if f\fspd!=step-1 then
-			step+=1
-			
-			for i,move in pairs(moves) do
+		if f%fspd==0 then
+			for i,move in pairs(moves)
+			do
 				if (step==i*2)	move.dy=-spd
 				
-				if step>anim_end then
+				if step>animend then
 					move.sp=7
 				else
-					move.sp=getsp(rot_anim_map[(move.sp-1)/2+1])
+					move.sp=getsp(
+						rotanim[(move.sp-1)/2+1]
+					)
 				end
 			end
+			
+			step+=1
 		end
 		
 		--jump for joy
 		for move in all(moves) do
-			if move.dy and move.dy<=spd do
-				--[[doing it this way because of strange
-				behaviour when working with decimals]]
+			if move.dy
+			and move.dy<=spd do
+				--[[doing it this way
+				because getting strange
+				0.001 or 0.999 values
+				when using decimals]]
 				local y=move.y*10
 				y+=move.dy
 				move.dy+=fspd*2
 				move.y=ceil(y)/10
 			end
 		end
+		
+		if f==150 then
+			f=0
+			stage+=1
+			moves={}
+			if stage==#movesets+1 then
+				state="main"
+			else
+				state="hold"
+			end
+		end
 	end
 	
 	--update smoke
-	local mult= round<stageend and 0.8 or 0.2
+	local mult=
+	inround and 0.8 or 0.2
 	for p in all(smoke) do
   p.x+=p.dx*mult
   p.y+=p.dy*mult
-  p.act-= round<stageend and 1 or 0.2
+  p.act-=
+  inround and 1 or 0.2
   if (p.act<0) del(smoke,p)
  end
+ 
+	f+=1
 end
 
 
 function drawgame()
 	color(2)
 	--print(step)
-	if round!=stageend then
+	if inround then
 		print("round "..round,3,3)
 	else
 		print("round "..round-1,3,3)
@@ -223,7 +279,10 @@ function drawgame()
 	--draw base 2x4 grid
 	for i=1,8 do
 		local c=7
-		if (round<stageend and ceil(step%8.1)==i) c=12
+		if inround
+		and ceil(step%8.1)==i then
+			c=12
+		end
 		drawsq(getx(i),gety(i),c)
 	end
 	
@@ -231,17 +290,19 @@ function drawgame()
 	for move in all(moves) do
 		--rectfill(move.x-1,move.y-2,move.x+15,move.y+16,6)
 		--rect(move.x-1,move.y-2,move.x+15,move.y+16,13)
-		spr(move.sp,move.x,move.y,2,2)
+		spr(
+			move.sp,move.x,move.y,2,2
+		)
 		--spr(11,move.x,move.y,2,2)
 	end
 	
 	--draw player
 	drawsq(57,88,7)
-	if round<stageend
+	if inround
 	and f%10<4
 	and step>=9
 	and movesp then
-		local c= movesp==9 and 8 or 11
+		local c=movesp==9 and 8 or 11
 		drawsq(57,88,c)
 	end
 	if movesp then
@@ -253,12 +314,37 @@ function drawgame()
   circfill(p.x,p.y,p.r,p.c)
  end
  
-	if round==stageend and step>anim_end then
+	if not inround
+	and step>animend then
 		print("stage end!",26,24,2)
 	end
 end
 -->8
---utils
+--functions
+function createmovesets()
+	movesets={
+  --{⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
+  --{⬆️,➡️,⬆️,⬅️,⬇️,⬆️,➡️,⬇️},
+  --{⬅️,⬅️,➡️,⬆️,⬅️,⬇️,⬆️,➡️},
+  {⬆️,⬇️,⬅️,⬆️,⬇️,⬆️,➡️,➡️}
+	}
+end
+
+function testcurtainanim()
+	if step2<6 then
+		f+=1
+	
+		if f\3!=step2-1 then
+			if (step2==1) frame=33
+			if (step2==2) frame=35
+			if (step2==3) frame=37
+			if (step2==4) frame=39
+			if (step2==5) frame=41
+			step2+=1
+		end
+	end
+end
+
 function drawsq(x,y,c)
 	rect(x-2,y+8,x+16,y+17,c)
 end
@@ -285,6 +371,7 @@ function checkmove(m)
 	 	return getsp(m)
 	 end
 	end
+	return movesp
 end
 
 function checkerr()
