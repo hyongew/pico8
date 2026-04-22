@@ -349,12 +349,40 @@ end
 -->8
 --functions
 function createmovesets()
-	movesets={
-  --{⬅️,⬆️,➡️,⬇️,➡️,➡️,⬇️,⬇️},
-  --{⬆️,➡️,⬆️,⬅️,⬇️,⬆️,➡️,⬇️},
-  --{⬅️,⬅️,➡️,⬆️,⬅️,⬇️,⬆️,➡️},
-  {⬆️,⬇️,⬅️,⬆️,⬇️,⬆️,➡️,➡️}
-	}
+	for i=1,1 do
+		local moveset={}
+		local repcount=0
+		for j=1,8 do
+			local sel=getrndmove()
+			local prev=moveset[j]
+			
+			if sel==prev then
+				--lower chance of repeats
+				sel=getrndmove()
+			end
+			
+			if repcount==2 then
+				--prevent further repeats
+				while sel==prev do
+					sel=getrndmove()
+				end
+			end
+			
+			if sel==prev then
+				repcount+=1
+			elseif repcount>0 then
+				repcount-=1
+			end
+			
+			add(moveset,sel)
+		end
+		add(movesets,moveset)
+	end
+end
+
+function getrndmove()
+	local allmoves={⬅️,➡️,⬆️,⬇️}
+	return allmoves[flr(rnd(4))+1]
 end
 
 function testcurtainanim()
