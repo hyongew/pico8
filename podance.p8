@@ -6,18 +6,18 @@ function _init()
  pal(9,9+128,1)
  palt(0,false)
  palt(14,true)
- --style,style_l=
- --"\^o916","\^w\^t\^o914"
- 
- --[[main,tut,hold,quit,
- 				rdy,go,fin]]
- state="main"
+ big,style=
+ "\^w\^t","\^o016"
+ state="main" --[[
+ 	main,tut,hold,quit,rdy,go,fin
+ ]]
  stage,round,step,score,f=
  1,1,0,0,0
- --moves={sp,x,y}
- --movesets={dir,hide,flip}
  moves,movesets,movesp,movenum=
- {},{},nil,1
+ {},{},nil,1 --[[
+ 	moves={sp,x,y}
+ 	movesets={dir,hide,flip}
+ ]]
  inround,correct,sounded=
  false,nil,false
  rotanim,animend=
@@ -79,40 +79,51 @@ end
 
 function _draw()
 	cls()
-	color(15)
-	rectfill(0,0,128,128)
-	color(2)
+	color(15) --bg
+	rectfill(0,0,128,128) --bg
+	color(7)
 	if state=="main" then
-		print("podance")
-		print(
+		print(big..style..
+			"podance"
+		)
+		print(style..
 			"🅾️ start       ❎ tut",
-			22,106
+			21,106
 		)
 	
 	elseif state=="tut" then
 		print("tut")
 		spr(frame,60,60,2,2)
-		print("❎ main",50,106)
+		print(style..
+			"❎ main",
+			49,106
+		)
 	
 	elseif state=="hold" then
 		print("hold")
-		print(
+		print(style..
 			"🅾️ start      ❎ quit",
-			22,106
+			21,106
 		)
 	
 	elseif state=="quit" then
 		print("quit")
-		print(
+		print(style..
 			"🅾️ back      ❎ quit",
-			23,106
+			22,106
 		)
 	
 	elseif state=="rdy" then
 		if f<60 then
-			print(3-f\20,60,40)
+			print(big..style..
+				3-f\20,
+				60,40
+			)
 		else
-			print("go!",55,40)
+			print(big..style..
+				"go!",
+				54,40
+			)	
 		end
 	
 	elseif state=="go" then
@@ -120,7 +131,10 @@ function _draw()
 		
 	elseif state=="fin" then
 		print("fin")
-		print("🅾️ main",50,106)
+		print(style..
+			"🅾️ main",
+			50,106
+		)
 	end
 end
 -->8
@@ -239,6 +253,7 @@ function updategame()
 			end
 		end
 		
+		--wrap up
 		if f==150 then
 			f=0
 			stage+=1
@@ -267,14 +282,22 @@ end
 
 
 function drawgame()
-	color(2)
 	--print(step)
 	if inround then
-		print("round "..round,3,3)
+		print(style..
+			"round "..round,
+			3,4
+		)
 	else
-		print("round "..round-1,3,3)
+		print(style..
+			"round "..round-1,
+			3,4
+		)
 	end
-	print(score.."/32",3,11)
+	print(style..
+		score.."/32",
+		3,12
+	)
 	
 	--draw base 2x4 grid
 	for i=1,8 do
@@ -297,16 +320,16 @@ function drawgame()
 	end
 	
 	--draw player
-	drawsq(57,88,7)
+	drawsq(57,92,7)
 	if inround
 	and f%10<4
 	and step>=9
 	and movesp then
 		local c=movesp==9 and 8 or 11
-		drawsq(57,88,c)
+		drawsq(57,92,c)
 	end
 	if movesp then
-		spr(movesp,57,88,2,2)
+		spr(movesp,57,92,2,2)
 	end
 	
 	--draw smoke
@@ -314,9 +337,13 @@ function drawgame()
   circfill(p.x,p.y,p.r,p.c)
  end
  
+ --wrap up
 	if not inround
 	and step>animend then
-		print("stage end!",26,24,2)
+		print(big..style..
+			"stage end!",
+			25,29
+		)
 	end
 end
 -->8
@@ -358,7 +385,7 @@ function getx(step)
 end
 
 function gety(step)
- return (step\4.1+1)*16+32
+ return (step\4.1+1)*16+38
 end
 
 function checkmove(m)
@@ -381,7 +408,8 @@ function checkerr()
 		--draw smoke
   for i=1,20 do
    add(smoke,{x=64,y=100,
-       dx=rnd(3)-1.5,dy=rnd(2)-1,
+       dx=rnd(3)-1.5,
+       dy=rnd(2)-1,
        r=rnd(2),act=15,
        c=rnd({5,6,2,0})})
   end
