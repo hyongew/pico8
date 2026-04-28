@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
 function _init()
- 	poke(0x5f2e, 1)
+ poke(0x5f2e,1)
 	pal(9,9+128,1)
 	palt(0,false)
 	palt(14,true)
@@ -11,8 +11,9 @@ function _init()
 	state="main" --[[
 		main,tut,hold,quit,rdy,go,fin
 	]]
-	stage,round,step,score,f=
-	1,1,0,0,0
+	f=0
+	stage,round,step,score,total=
+	0,0,0,0,0
 	moves,movesets,movesp,movenum=
 	{},{},nil,1 --[[
 		moves={sp,x,y}
@@ -29,6 +30,7 @@ end
 
 function _update()
 	if state=="main" then
+		f=0
 		if (btnp(🅾️)) state="rdy"
 		if (btnp(❎)) state="tut"
 		
@@ -36,6 +38,7 @@ function _update()
 		if (btnp(❎)) state="main"
 		
 	elseif state=="hold" then
+		f=0
 		if (btnp(🅾️))	state="rdy"
 		if (btnp(❎)) state="quit"
 		
@@ -47,8 +50,11 @@ function _update()
 		if f<80 then
 			f+=1
 		else
+			moves,movesets,movesp,
+			movenum,round,step,score,f=
+			{},{},nil,1,1,0,0,0
 			initmovesets()
-			round,step,f=1,0,0
+			stage+=1
 			inround=true
 			state="go"
 		end
@@ -124,6 +130,7 @@ function _draw()
 		
 	elseif state=="fin" then
 		print("fin")
+		print("total: "..total)
 		print(style..
 			"🅾️ main",
 			50,106
@@ -256,12 +263,10 @@ function updategame()
 		
 		--wrap up
 		if f==150 then
-			f=0
-			stage+=1
-			moves={}
-			if stage==#movesets+1 then
-				state="main"
+			if stage==#movesets then
+				state="fin"
 			else
+				total+=score
 				state="hold"
 			end
 		end
@@ -369,14 +374,16 @@ end
 -->8
 --functions
 function initmovesets()
-	for i=1,1 do
+	for i=1,4 do
 		local moveset={}
 		local repcount=0
 		for j=1,8 do
 			local sel=getrndmove()
-			local prev=moveset[j]
+			local prev=moveset[j-1]
+			if (prev) prev=prev.d
 			
-			if sel==prev then
+			if sel==prev
+			and repcount==1 then
 				--lower chance of repeats
 				sel=getrndmove()
 			end
@@ -434,7 +441,7 @@ function checkmove(m)
 		if not btnp(m) then
 			checkerr()
 			return 9
-	 	else
+	 else
 			return getsp(m)
 		end
 	end
