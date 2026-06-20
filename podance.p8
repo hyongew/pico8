@@ -125,7 +125,20 @@ function _draw()
 		)
 	
 	elseif state=="hold" then
-		print("hold")
+		local ns=stage+1
+		local titleset={
+			"",
+			"memorise",
+			"practice",
+			"all together!"
+		}
+		local x=29
+		if (ns==4) x=21
+		print(style..
+			"stage "..ns..
+			": "..titleset[ns],
+			x,25
+		)
 		print(style..
 			"🅾️ start      ❎ quit",
 			21,106
