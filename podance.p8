@@ -130,6 +130,21 @@ function _draw()
 				gety(i)-8)
 		end
 		
+		line(
+			getx(1)-4,
+			gety(5)-10,
+			getx(4)+18,
+			gety(5)-10,
+			13
+		)
+		line(
+			getx(2)+18,
+			gety(5)-10,
+			getx(2)+18,
+			gety(5)+24,
+			13
+		)
+		
 		--curtain
 		local x,y=
 			getx(5)+11,gety(5)
@@ -596,6 +611,7 @@ function checkerr()
   end
 	end
 end
+
 
 function drawcurtain(x,y,shft)
 	local shft=shft or 0
