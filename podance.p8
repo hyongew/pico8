@@ -24,7 +24,8 @@ function _init()
 	rotanim,animend=
 	{2,3,1,0},24 --#moves*2+8
 	csp,csp0=65,65	--curtain anim
-	spd=5
+	fmap={3,0,1,0,7,0,5}
+	spd=10
 	spdl,spdh=spd\2-1,spd\2+1
 	smoke={}
 end
@@ -113,8 +114,8 @@ function _draw()
 		
 		--basics
 		for i=1,4 do
-			local c=7
-			if (tstep==i) c=12
+			local c=
+				tstep==i and 7 or 12
 			drawsq(getx(i),gety(i)-28,c)
 			spr(
 				getsp(ms[i]),
@@ -122,8 +123,8 @@ function _draw()
 				gety(i)-28,
 				2,2
 			)
-			local off=41
-			if (tstep-4==i) off=57
+			local off=
+				tstep-4==i and 41 or 57
 			spr(ms[i]+off,
 				getx(i)+4,
 				gety(i)-8)
@@ -131,8 +132,7 @@ function _draw()
 		
 		--curtain
 		local x,y=
-		getx(5)+11,gety(5)-4
-		
+			getx(5)+11,gety(5)
 		drawsq(x,y,7)
 		spr(getsp(⬇️),x,y,2,2)
 		drawcurtain(x,y)
@@ -140,6 +140,22 @@ function _draw()
 			"❎ main",
 			49,106,7
 		)
+		
+		--mirror
+		local x,y=
+			getx(7)+11,gety(7)
+		local tstep2=f\(spd*2)+1
+		local off=
+			tstep%2==1 and 41 or 57
+		drawsq(x,y,7)
+		rectfill(x-1,y-1,x+15,y+16,6)
+		spr(
+			fmap[getsp(ms[tstep2])]+32,
+			x,y,2,2
+		)
+		spr(ms[tstep2]+off,x+4,y+18)
+		rect(x-1,y-1,x+15,y+16,7)
+		spr(13,x,y,2,2)
 		
 		print(style..
 			"❎ main",
@@ -228,7 +244,7 @@ function updategame()
 			--demo move
 			if step<9 then
 				local moveinfo=
-				movesets[round][step]
+					movesets[round][step]
 				
 				add(moves,
 								{
@@ -337,12 +353,12 @@ function updategame()
 	
 	--update smoke
 	local mult=
-	instage and 0.8 or 0.2
+		instage and 0.8 or 0.2
 	for p in all(smoke) do
 		p.x+=p.dx*mult
   	p.y+=p.dy*mult
   	p.act-=
-  	instage and 1 or 0.2
+  		instage and 1 or 0.2
   	if (p.act<0) del(smoke,p)
 	end
  
@@ -381,11 +397,10 @@ function drawgame()
 	--draw steps
 	for move in all(moves) do
 		local x,y,sp,shft=
-		move.x,move.y,move.sp,0
+			move.x,move.y,move.sp,0
 		
 		--flipped sprite
 		if move.flep then
-			local fmap={3,0,1,0,7,0,5}
 			sp=fmap[sp]
 			shft=32
 			--mirror base
@@ -585,7 +600,7 @@ end
 function drawcurtain(x,y,shft)
 	local shft=shft or 0
 	local x1,y1,x2,y2=
-	x-1,y-1,x+15,y+15
+		x-1,y-1,x+15,y+15
 	local cf=csp-csp0
 	--curtain top,left,right
 	line(x1,y1,x2,y1,1)
