@@ -19,11 +19,13 @@ function _init()
 		moves={sp,x,y}
 		movesets={d,hide,flep}
 	]]
-	inround,correct,sounded=
+	instage,correct,sounded=
 	false,nil,false
 	rotanim,animend=
 	{2,3,1,0},24 --#moves*2+8
 	csp,csp0=65,65	--curtain anim
+	spd=15
+	spdl,spdh=spd\2-1,spd\2+1
 	smoke={}
 end
 
@@ -35,19 +37,18 @@ function _update()
 		if (btnp(❎)) state="tut"
 		
 	elseif state=="tut" then
-		if f==0	then
-			log("\n")
-			movesets={}
-			stage=2
-			step=4
-			initmovesets()
-		end
-		if (f!=1) f=1
+		if (f%spd==0) sfx(0)
+		f+=1
+		if (f==spd*4) f=0
 		if (btnp(❎)) state="main"
 		
 	elseif state=="hold" then
-		f=0
-		if (btnp(🅾️))	state="rdy"
+		f+=1
+		if (f==spd*4) f=0
+		if (btnp(🅾️)) then
+			f=0
+			state="rdy"
+		end
 		if (btnp(❎)) state="quit"
 		
 	elseif state=="quit" then
@@ -55,7 +56,7 @@ function _update()
 		if (btnp(❎)) state="main"
 		
 	elseif state=="rdy" then
-		if f<80 then
+		if f<spd*8 then
 			f+=1
 		else
 			moves,movesets,movesp,
@@ -64,14 +65,14 @@ function _update()
 			stage+=1
 			initmovesets()
 			state="go"
-			inround=true
+			instage=true
 		end
 		
 		if f==1
-		or f==21
-		or f==41 then
+		or f==spd*2+1
+		or f==spd*4+1 then
 			sfx(5)
-		elseif f==61 then
+		elseif f==spd*6+1 then
 			sfx(6)
 		end
 		
@@ -100,13 +101,27 @@ function _draw()
 		)
 	
 	elseif state=="tut" then
-		print("tut")
-		for move in all(movesets[step]) do
-			print(tostr(move.hide))
+		local ms={⬅️,⬆️,➡️,⬇️}
+		local tstep=f\spd+1
+		for i=1,4 do
+			local c=7
+			if (tstep==i) c=12
+			drawsq(getx(i),gety(i)-24,c)
+			spr(
+				getsp(ms[i]),
+				getx(i),
+				gety(i)-24,
+				2,2
+			)
+			local off=41
+			if (tstep==i) off=57
+			spr(ms[i]+off,
+				getx(i)+4,
+				gety(i))
 		end
 		print(style..
 			"❎ main",
-			49,106
+			49,106,7
 		)
 	
 	elseif state=="hold" then
@@ -124,9 +139,9 @@ function _draw()
 		)
 	
 	elseif state=="rdy" then
-		if f<60 then
+		if f<spd*6 then
 			print(big..style..
-				3-f\20,
+				3-f\(spd*2),
 				60,40
 			)
 		else
@@ -152,9 +167,9 @@ end
 --main game loop
 function updategame()
 	--gameplay
-	if inround then
+	if instage then
 		--update step
-		if f%10==0 then
+		if f%spd==0 then
  		correct=nil
  		sounded=false
 			step+=1
@@ -167,7 +182,7 @@ function updategame()
 			end
 			
  		if round==#movesets+1 then
- 			inround=false
+ 			instage=false
  			return
  		end
  		
@@ -196,7 +211,8 @@ function updategame()
 		--user move
 		if step>=9 then
 			--input timeframe
-			if f%10>6 or f%10<4 then
+			if f%spd>spdh
+			or f%spd<spdl then
 	 			if correct==nil then
 	 				movesp=checkmove(
 	 					movesets[round]
@@ -206,7 +222,7 @@ function updategame()
 	 		--check input
  			else
  				if correct==true
- 				and f%10==4 then
+ 				and f%spd==spdl then
  					score+=1
  				end
  			
@@ -236,14 +252,14 @@ function updategame()
 			sfx(4)
 		end
 		
-		local spd=42
+		local g=42
 		local fspd=3
 		
 		--rotate the potate
 		if f%fspd==0 then
 			for i,move in pairs(moves)
 			do
-				if (step==i*2)	move.dy=-spd
+				if (step==i*2)	move.dy=-g
 				
 				if step>animend then
 					move.sp=7
@@ -260,7 +276,7 @@ function updategame()
 		--jump for joy
 		for move in all(moves) do
 			if move.dy
-			and move.dy<=spd do
+			and move.dy<=g do
 				--[[	doing it this way
 						because getting strange
 						0.001 or 0.999 values
@@ -279,18 +295,19 @@ function updategame()
 			else
 				total+=score
 				state="hold"
+				f=0
 			end
 		end
 	end
 	
 	--update smoke
 	local mult=
-	inround and 0.8 or 0.2
+	instage and 0.8 or 0.2
 	for p in all(smoke) do
 		p.x+=p.dx*mult
   	p.y+=p.dy*mult
   	p.act-=
-  	inround and 1 or 0.2
+  	instage and 1 or 0.2
   	if (p.act<0) del(smoke,p)
 	end
  
@@ -300,7 +317,7 @@ end
 
 function drawgame()
 	--print(step)
-	if inround then
+	if instage then
 		print(style..
 			"round "..round,
 			3,4
@@ -319,7 +336,7 @@ function drawgame()
 	--draw base 2x4 grid
 	for i=1,8 do
 		local c=7
-		if inround
+		if instage
 		and ceil(step%8.1)==i then
 			c=12
 		end
@@ -369,9 +386,9 @@ function drawgame()
 	
 	--draw player
 	drawsq(57,92,7)
-	if inround
-	and f%10<4
-	and step>=9
+	if instage
+	and f%spd<spdl
+	and (step>=9 or f<spdl)
 	and movesp then
 		local c=movesp==9 and 8 or 11
 		drawsq(57,92,c)
@@ -386,7 +403,7 @@ function drawgame()
 	end
  
  --wrap up
-	if not inround
+	if not instage
 	and step>animend then
 		print(big..style..
 			"stage end!",
@@ -431,7 +448,6 @@ function initmovesets()
 		local hides,fleps={},{}
 		if stage==2 or stage==4 then
 			hides=getmodmoves(i)
-			log(hides)
 		end
 		if stage==3 or stage==4 then
 			fleps=getmodmoves(i)
@@ -456,13 +472,13 @@ end
 
 
 function getrndmove()
-	local allmoves={⬅️,➡️,⬆️,⬇️}
-	return allmoves[flr(rnd(4))+1]
+	local ms={⬅️,➡️,⬆️,⬇️}
+	return ms[flr(rnd(4))+1]
 end
 
 
 function getmodmoves(n)
-	local nums={1,2,3,4,5,6,7,8}
+	local nums={1,2,3,4,5,6,7}
 	local modmoves={}
 	for i=1,n do
 		local sel=flr(rnd(#nums))+1
@@ -577,22 +593,22 @@ __gfx__
 00000000e1499999994111eee1119999999941eeeee1119419991eeee1941999991941eeee1999999911941ee14ddd000ddd41eeeeeeeeeeeeeee7ee00000000
 00000000ee111111111eeeeeeeee111111111eeeeee199411111eeeeee11111111111eeeeee1111111ee11eee1441444441421eeeeeeeeeeeeee7eee00000000
 00000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee111eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee11111111111eeeeeeeeeeeeeeeeeee00000000
-00000000eeee11211eeeeeeeeeeeee11211eeeeeeeeee112111eeeeeeeeee111211eeeee00000000000000000000000000000000000000000000000000000000
-00000000eee14444211eeeeeeeee11444421eeeeeeee14444421eeeeeeee14444421eeee00000000000000000000000000000000000000000000000000000000
-00000000ee1444444201eeeeeee1044444421eeeeee1444444421eeeeee1444444421eee00000000000000000000000000000000000000000000000000000000
-00000000ee14444442001eeeee10044444441eeeee14440244441eeeee14444444441eee00000000000000000000000000000000000000000000000000000000
-00000000e144444444201eeeee104444444421eeee144002444421eeee144444444421ee00000000000000000000000000000000000000000000000000000000
-00000000e144404444201eeeee104444404421eee1444002444421eee1440444440441ee00000000000000000000000000000000000000000000000000000000
-00000000e100444444221eeeee144444444001eee1444402444421eee1444400044441ee00000000000000000000000000000000000000000000000000000000
-00000000e144444444421eeeee144444444421eee1444444444421eee1444444444441ee00000000000000000000000000000000000000000000000000000000
-00000000e1664444446d1eeeee1664444446d1eee16644444446d1eee1664444444661ee00000000000000000000000000000000000000000000000000000000
-00000000e141666666201eeeee104666666121eee14466666664221ee1446666666441ee00000000000000000000000000000000000000000000000000000000
-00000000e1144444442001eee1004444444411eee1444402444421eee1141444441411ee00000000000000000000000000000000000000000000000000000000
-00000000e14414444461421e14216444441421eeee1640024444d1eee1d114444411d1ee00000000000000000000000000000000000000000000000000000000
-00000000ee1166666644421e1444466666611eeeee14660d666621eee112d66666d221ee00000000000000000000000000000000000000000000000000000000
-00000000e1244444442111eee1114444444421eeeee1114214441eeee1421444441421ee00000000000000000000000000000000000000000000000000000000
-00000000ee111111111eeeeeeeee111111111eeeeee144211111eeeeee11111111111eee00000000000000000000000000000000000000000000000000000000
-00000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee111eeeeeeeeeeeeeeeeeeeeeeeee00000000000000000000000000000000000000000000000000000000
+00000000eeee11211eeeeeeeeeeeee11211eeeeeeeeee112111eeeeeeeeee111211eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
+00000000eee14444211eeeeeeeee11444421eeeeeeee14444421eeeeeeee14444421eeeee77777eee77777eee77777eee77777ee000000000000000000000000
+00000000ee1444444201eeeeeee1044444421eeeeee1444444421eeeeee1444444421eee7771177e7711777e7771777e7711177e000000000000000000000000
+00000000ee14444442001eeeee10044444441eeeee14440244441eeeee14444444441eee7711177e7711177e7711177e7711177e000000000000000000000000
+00000000e144444444201eeeee104444444421eeee144002444421eeee144444444421ee7771177e7711777e7711177e7771777e000000000000000000000000
+00000000e144404444201eeeee104444404421eee1444002444421eee1440444440441eed77777ded77777ded77777ded77777de000000000000000000000000
+00000000e100444444221eeeee144444444001eee1444402444421eee1444400044441eeedddddeeedddddeeedddddeeedddddee000000000000000000000000
+00000000e144444444421eeeee144444444421eee1444444444421eee1444444444441eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
+00000000e1664444446d1eeeee1664444446d1eee16644444446d1eee1664444444661eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
+00000000e141666666201eeeee104666666121eee14466666664221ee1446666666441eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
+00000000e1144444442001eee1004444444411eee1444402444421eee1141444441411eee66666eee66666eee66666eee66666ee000000000000000000000000
+00000000e14414444461421e14216444441421eeee1640024444d1eee1d114444411d1ee6661166e6611666e6661666e6611166e000000000000000000000000
+00000000ee1166666644421e1444466666611eeeee14660d666621eee112d66666d221ee6611166e6611166e6611166e6611166e000000000000000000000000
+00000000e1244444442111eee1114444444421eeeee1114214441eeee1421444441421ee6661166e6611666e6611166e6661666e000000000000000000000000
+00000000ee111111111eeeeeeeee111111111eeeeee144211111eeeeee11111111111eeee66666eee66666eee66666eee66666ee000000000000000000000000
+00000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee111eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee000000000000000000000000
 00000000818181818181818e818181818181818e818181818181818e818181818181818e818181818181818e0000000000000000000000000000000000000000
 0000000011111e111e11111e12111e111e11121e121112111211121e121112111211121e121112111211121e0000000000000000000000000000000000000000
 0000000081eeeeeeeeeee18e8881eeeeeee1888e8888881e1888888e888888818888888e888888818888888e0000000000000000000000000000000000000000
