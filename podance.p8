@@ -387,10 +387,16 @@ function drawgame()
 	--draw player
 	drawsq(57,92,7)
 	if instage
-	and f%spd<spdl
-	and (step>=9 or f<spdl)
+	and step>=9
 	and movesp then
-		local c=movesp==9 and 8 or 11
+		local c=7
+		if correct==nil then
+			c=7
+		elseif correct then
+			c=11
+		else
+			c=8
+		end
 		drawsq(57,92,c)
 	end
 	if movesp then
