@@ -24,7 +24,7 @@ function _init()
 	rotanim,animend=
 	{2,3,1,0},24 --#moves*2+8
 	csp,csp0=65,65	--curtain anim
-	spd=15
+	spd=5
 	spdl,spdh=spd\2-1,spd\2+1
 	smoke={}
 end
@@ -39,7 +39,14 @@ function _update()
 	elseif state=="tut" then
 		if (f%spd==0) sfx(0)
 		f+=1
-		if (f==spd*4) f=0
+		if f>=spd*4
+		and csp<csp0+8 then
+			csp+=2
+		end
+		if f==spd*8 then
+			f=0
+			csp=csp0
+		end
 		if (btnp(❎)) state="main"
 		
 	elseif state=="hold" then
@@ -103,22 +110,37 @@ function _draw()
 	elseif state=="tut" then
 		local ms={⬅️,⬆️,➡️,⬇️}
 		local tstep=f\spd+1
+		
+		--basics
 		for i=1,4 do
 			local c=7
 			if (tstep==i) c=12
-			drawsq(getx(i),gety(i)-24,c)
+			drawsq(getx(i),gety(i)-28,c)
 			spr(
 				getsp(ms[i]),
 				getx(i),
-				gety(i)-24,
+				gety(i)-28,
 				2,2
 			)
 			local off=41
-			if (tstep==i) off=57
+			if (tstep-4==i) off=57
 			spr(ms[i]+off,
 				getx(i)+4,
-				gety(i))
+				gety(i)-8)
 		end
+		
+		--curtain
+		local x,y=
+		getx(5)+11,gety(5)-4
+		
+		drawsq(x,y,7)
+		spr(getsp(⬇️),x,y,2,2)
+		drawcurtain(x,y)
+		print(style..
+			"❎ main",
+			49,106,7
+		)
+		
 		print(style..
 			"❎ main",
 			49,106,7
@@ -358,41 +380,31 @@ function drawgame()
 	
 	--draw steps
 	for move in all(moves) do
-		local x,y,sp,spshift=
+		local x,y,sp,shft=
 		move.x,move.y,move.sp,0
-		local bx1,by1,bx2,by2=
-		x-1,y-1,x+15,y+15
 		
 		--flipped sprite
 		if move.flep then
 			local fmap={3,0,1,0,7,0,5}
 			sp=fmap[sp]
-			spshift=32
+			shft=32
 			--mirror base
 			rectfill(
-				bx1,by1,bx2,by2+1,6
+				x-1,y-1,x+15,y+16,6
 			)
 		end
 		
 		--demo move
-		spr(sp+spshift,x,y,2,2)
+		spr(sp+shft,x,y,2,2)
 		
 		--curtain
 		if move.hide then
-			local cf=csp-csp0
-			--curtain top,left,right
-			line(bx1,by1,bx2,by1,1)
-			line(bx1,by1,bx1,by2,1)
-			line(bx2,by1,bx2,by2,1)
-			--curtain bottom
-			line(bx1,by2,bx1+cf,by2,1)
-			line(bx2,by2,bx2-cf,by2,1)
-			spr(csp+spshift,x,y,2,2)
+			drawcurtain(x,y,shft)
 		end
 		
 		--mirror surface
 		if move.flep then
-			rect(bx1,by1,bx2,by2+1,7)
+			rect(x-1,y-1,x+15,y+16,7)
 			spr(13,x,y,2,2)
 		end
 	end
@@ -568,6 +580,21 @@ function checkerr()
       	c=rnd({5,6,2,0})})
   end
 	end
+end
+
+function drawcurtain(x,y,shft)
+	local shft=shft or 0
+	local x1,y1,x2,y2=
+	x-1,y-1,x+15,y+15
+	local cf=csp-csp0
+	--curtain top,left,right
+	line(x1,y1,x2,y1,1)
+	line(x1,y1,x1,y2,1)
+	line(x2,y1,x2,y2,1)
+	--curtain bottom
+	line(x1,y2,x1+cf,y2,1)
+	line(x2,y2,x2-cf,y2,1)
+	spr(csp+shft,x,y,2,2)
 end
 -->8
 --debugger
