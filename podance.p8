@@ -34,6 +34,7 @@ end
 function _update()
 	if state=="main" then
 		f=0
+		csp=csp0
 		if (btnp(🅾️)) state="rdy"
 		if (btnp(❎)) state="tut"
 		
@@ -124,7 +125,7 @@ function _draw()
 				2,2
 			)
 			local off=
-				tstep-4==i and 41 or 57
+				tstep-4==i and 57 or 41
 			spr(ms[i]+off,
 				getx(i)+4,
 				gety(i)-8)
@@ -132,16 +133,16 @@ function _draw()
 		
 		line(
 			getx(1)-4,
-			gety(5)-10,
+			gety(5)-12,
 			getx(4)+18,
-			gety(5)-10,
+			gety(5)-12,
 			13
 		)
 		line(
 			getx(2)+18,
-			gety(5)-10,
+			gety(5)-8,
 			getx(2)+18,
-			gety(5)+24,
+			gety(5)+26,
 			13
 		)
 		
@@ -155,13 +156,20 @@ function _draw()
 			"❎ main",
 			49,106,7
 		)
+		off=
+			tstep==8 and 57 or 41
+		spr(
+			⬇️+off,
+			getx(5)+15,
+			gety(5)+18
+		)
 		
 		--mirror
 		local x,y=
 			getx(7)+11,gety(7)
 		local tstep2=f\(spd*2)+1
-		local off=
-			tstep%2==1 and 41 or 57
+		off=
+			tstep%2==0 and 57 or 41
 		drawsq(x,y,7)
 		rectfill(x-1,y-1,x+15,y+16,6)
 		spr(
@@ -626,6 +634,7 @@ function drawcurtain(x,y,shft)
 	line(x1,y2,x1+cf,y2,1)
 	line(x2,y2,x2-cf,y2,1)
 	spr(csp+shft,x,y,2,2)
+	line(x1,y2+1,x2,y2+1,7)
 end
 -->8
 --debugger
