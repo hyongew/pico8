@@ -53,7 +53,15 @@ function _update()
 		
 	elseif state=="hold" then
 		f+=1
-		if (f==spd*4) f=0
+		if f<spd*2
+		and csp>csp0 then
+			csp-=2
+		end
+		if f>=spd*2
+		and csp<csp0+8 then
+			csp+=2
+		end
+		if (f==spd*4)	f=0
 		if (btnp(🅾️)) then
 			f=0
 			state="rdy"
@@ -200,6 +208,11 @@ function _draw()
 			": "..titleset[ns],
 			x,25
 		)
+		
+		spr(getsp(⬇️),62,54,2,2)
+		drawcurtain(62,54)
+		spr(getsp(⬆️),54,62,2,2)
+		
 		print(style..
 			"🅾️ start      ❎ quit",
 			21,106
@@ -419,13 +432,13 @@ function drawgame()
 	
 	--draw steps
 	for move in all(moves) do
-		local x,y,sp,shft=
+		local x,y,sp,spshft=
 			move.x,move.y,move.sp,0
 		
 		--flipped sprite
 		if move.flep then
 			sp=fmap[sp]
-			shft=32
+			spshft=32
 			--mirror base
 			rectfill(
 				x-1,y-1,x+15,y+16,6
@@ -433,11 +446,11 @@ function drawgame()
 		end
 		
 		--demo move
-		spr(sp+shft,x,y,2,2)
+		spr(sp+spshft,x,y,2,2)
 		
 		--curtain
 		if move.hide then
-			drawcurtain(x,y,shft)
+			drawcurtain(x,y,spshft!=0)
 		end
 		
 		--mirror surface
@@ -622,7 +635,7 @@ end
 
 
 function drawcurtain(x,y,shft)
-	local shft=shft or 0
+	local spshft=shft and 32 or 0
 	local x1,y1,x2,y2=
 		x-1,y-1,x+15,y+15
 	local cf=csp-csp0
@@ -633,7 +646,7 @@ function drawcurtain(x,y,shft)
 	--curtain bottom
 	line(x1,y2,x1+cf,y2,1)
 	line(x2,y2,x2-cf,y2,1)
-	spr(csp+shft,x,y,2,2)
+	spr(csp+spshft,x,y,2,2)
 	line(x1,y2+1,x2,y2+1,7)
 end
 -->8
