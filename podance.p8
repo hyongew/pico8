@@ -171,9 +171,9 @@ function _draw()
 		spr(
 			fmap[getsp(ms[tstp2])]+32,
 			x,y,2,2)
-		spr(ms[tstp2]+off,x+4,y+18)
 		rect(x-1,y-1,x+15,y+16,7)
 		spr(13,x,y,2,2)
+		spr(ms[tstp2]+off,x+4,y+18)
 		
 		print(style..
 			"❎ main",
@@ -195,9 +195,33 @@ function _draw()
 			": "..titleset[ns],
 			x,25)
 		
-			spr(getsp(⬇️),62,54,2,2)
-			drawcurtain(62,54)
-			spr(getsp(⬆️),54,62,2,2)
+		if ns==2 then
+			spr(getsp(⬇️),58,54,2,2)
+			drawcurtain(58,54)
+			spr(getsp(⬆️),50,62,2,2)
+			if csp==csp0+8 then
+				print("?",60,62,7)
+			end
+			
+		elseif ns==3 then
+			local ms={⬅️,⬆️,➡️,⬇️}
+			local fs={⬅️,⬇️,➡️,⬆️}
+			local x,y=58,54
+			local tstp=f\spd+1
+			
+			drawsq(x,y,7)
+			rectfill(
+				x-1,y-1,x+15,y+16,6)
+			spr(
+				getsp(fs[tstp])+32,
+				x,y,2,2)
+			rect(x-1,y-1,x+15,y+16,7)
+			spr(13,x,y,2,2)
+			spr(
+				getsp(ms[tstp]),
+				50,62,2,2)
+
+		end
 		
 		print(style..
 			"🅾️ start      ❎ quit",
