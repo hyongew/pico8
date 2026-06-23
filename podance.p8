@@ -393,7 +393,7 @@ function drawtut()
 	local ms={⬅️,⬆️,➡️,⬇️}
 	local tstp=f\spd+1
 	local off=0
-	
+
 	--basics
 	for i=1,4 do
 		local c=
@@ -468,15 +468,14 @@ function drawhold()
 		drawcurtain(58,56)
 		spr(getsp(⬆️),50,64,2,2)
 		if csp==csp0+8 then
-			print("?",60,62,7)
+			print("?",60,63,7)
 		end
-		
+	
 	elseif ns==3 then
 		local ms={⬅️,⬆️,➡️,⬇️}
 		local fs={⬅️,⬇️,➡️,⬆️}
 		local x,y=58,56
 		local tstp=f\spd+1
-		
 		drawsq(x,y,7)
 		rectfill(x-1,y-1,x+15,y+16,6)
 		spr(
@@ -487,9 +486,19 @@ function drawhold()
 		spr(
 			getsp(ms[tstp]),
 			50,64,2,2)
-			
+	
 	elseif ns==4 then
-		// stage 4 intermission
+		local x,y=58,56
+		drawsq(x,y,7)
+		rectfill(x-1,y-1,x+15,y+16,6)
+		spr(getsp(⬇️)+32,x,y,2,2)
+		drawcurtain(x,y,true)
+		rect(x-1,y-1,x+15,y+16,7)
+		spr(13,x,y,2,2)
+		spr(getsp(⬆️),50,64,2,2)
+		if csp==csp0+8 then
+			print("!",60,63,7)
+		end
 	end
 end
 -->8
