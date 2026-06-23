@@ -12,17 +12,17 @@ function _init()
 		main,tut,hold,quit,rdy,go,fin
 	]]
 	f=0
-	stage,round,step,score,total=
+	stg,rd,stp,sc,tot=
 	0,0,0,0,0
-	moves,movesets,movesp,movenum=
+	mvs,mvsets,mvsp,mvnum=
 	{},{},nil,1 --[[
-		moves={sp,x,y}
-		movesets={d,hide,flep}
+		mvs={sp,x,y}{}
+		mvsets={d,hide,flep}{}
 	]]
 	instage,correct,sounded=
 	false,nil,false
 	rotanim,animend=
-	{2,3,1,0},24 --#moves*2+8
+	{2,3,1,0},24 --#mvs*2+8
 	csp,csp0=65,65	--curtain anim
 	fmap={3,0,1,0,7,0,5}
 	spd=10
@@ -76,11 +76,11 @@ function _update()
 		if f<spd*8 then
 			f+=1
 		else
-			moves,movesets,movesp,
-			movenum,round,step,score,f=
+			mvs,mvsets,mvsp,
+			mvnum,rd,stp,sc,f=
 			{},{},nil,1,1,0,0,0
-			stage+=1
-			initmovesets()
+			stg+=1
+			initmvsets()
 			state="go"
 			instage=true
 		end
@@ -110,49 +110,41 @@ function _draw()
 	color(7)
 	if state=="main" then
 		print(big..style..
-			"podance"
-		)
+			"podance")
 		print(style..
-			"🅾️ start       ❎ tut",
-			21,106
-		)
+			"🅾️ start     ❎ tutorial",
+			15,106)
 	
 	elseif state=="tut" then
 		local ms={⬅️,⬆️,➡️,⬇️}
-		local tstep=f\spd+1
+		local tstp=f\spd+1
+		local off=0
 		
 		--basics
 		for i=1,4 do
 			local c=
-				tstep==i and 7 or 12
+				(tstp-1)%4+1==i and 12 or 7
 			drawsq(getx(i),gety(i)-28,c)
 			spr(
 				getsp(ms[i]),
 				getx(i),
 				gety(i)-28,
-				2,2
-			)
-			local off=
-				tstep-4==i and 57 or 41
-			spr(ms[i]+off,
+				2,2)
+			off=tstp-4==i and 57 or 41
+			spr(
+				ms[i]+off,
 				getx(i)+4,
 				gety(i)-8)
 		end
 		
 		line(
-			getx(1)-4,
-			gety(5)-12,
-			getx(4)+18,
-			gety(5)-12,
-			13
-		)
+			getx(1)-4,gety(5)-12,
+			getx(4)+18,gety(5)-12,
+			13)
 		line(
-			getx(2)+18,
-			gety(5)-8,
-			getx(2)+18,
-			gety(5)+26,
-			13
-		)
+			getx(2)+18,gety(5)-8,
+			getx(2)+18,gety(5)+26,
+			13)
 		
 		--curtain
 		local x,y=
@@ -162,29 +154,24 @@ function _draw()
 		drawcurtain(x,y)
 		print(style..
 			"❎ main",
-			49,106,7
-		)
-		off=
-			tstep==8 and 57 or 41
+			49,106,7)
+		off=tstp==8 and 57 or 41
 		spr(
 			⬇️+off,
 			getx(5)+15,
-			gety(5)+18
-		)
+			gety(5)+18)
 		
 		--mirror
 		local x,y=
 			getx(7)+11,gety(7)
-		local tstep2=f\(spd*2)+1
-		off=
-			tstep%2==0 and 57 or 41
+		local tstp2=f\(spd*2)+1
+		off=tstp%2==0 and 57 or 41
 		drawsq(x,y,7)
 		rectfill(x-1,y-1,x+15,y+16,6)
 		spr(
-			fmap[getsp(ms[tstep2])]+32,
-			x,y,2,2
-		)
-		spr(ms[tstep2]+off,x+4,y+18)
+			fmap[getsp(ms[tstp2])]+32,
+			x,y,2,2)
+		spr(ms[tstp2]+off,x+4,y+18)
 		rect(x-1,y-1,x+15,y+16,7)
 		spr(13,x,y,2,2)
 		
@@ -194,11 +181,11 @@ function _draw()
 		)
 	
 	elseif state=="hold" then
-		local ns=stage+1
+		local ns=stg+1
 		local titleset={
 			"",
 			"memorise",
-			"practice",
+			"practise",
 			"all together!"
 		}
 		local x=29
@@ -206,36 +193,31 @@ function _draw()
 		print(style..
 			"stage "..ns..
 			": "..titleset[ns],
-			x,25
-		)
+			x,25)
 		
-		spr(getsp(⬇️),62,54,2,2)
-		drawcurtain(62,54)
-		spr(getsp(⬆️),54,62,2,2)
+			spr(getsp(⬇️),62,54,2,2)
+			drawcurtain(62,54)
+			spr(getsp(⬆️),54,62,2,2)
 		
 		print(style..
 			"🅾️ start      ❎ quit",
-			21,106
-		)
+			21,106)
 	
 	elseif state=="quit" then
 		print("quit")
 		print(style..
 			"🅾️ back      ❎ quit",
-			22,106
-		)
+			22,106)
 	
 	elseif state=="rdy" then
 		if f<spd*6 then
 			print(big..style..
 				3-f\(spd*2),
-				60,40
-			)
+				60,40)
 		else
 			print(big..style..
 				"go!",
-				54,40
-			)	
+				54,40)	
 		end
 	
 	elseif state=="go" then
@@ -243,11 +225,10 @@ function _draw()
 		
 	elseif state=="fin" then
 		print("fin")
-		print("total: "..total)
+		print("total: "..tot)
 		print(style..
 			"🅾️ main",
-			50,106
-		)
+			50,106)
 	end
 end
 -->8
@@ -259,67 +240,63 @@ function updategame()
 		if f%spd==0 then
  		correct=nil
  		sounded=false
-			step+=1
+			stp+=1
 			
 			--next round
-			if step==17 then
-				round+=1
-				step,f=1,0
+			if stp==17 then
+				rd+=1
+				stp,f=1,0
 				csp=csp0
 			end
 			
- 		if round==#movesets+1 then
+ 		if rd==#mvsets+1 then
  			instage=false
  			return
  		end
  		
-			if (step==1) moves={}
+			if (stp==1) mvs={}
  		
 			sfx(0)
 			
 			--demo move
-			if step<9 then
-				local moveinfo=
-					movesets[round][step]
+			if stp<9 then
+				local mvinfo=
+					mvsets[rd][stp]
 				
-				add(moves,
+				add(mvs,
 								{
-									sp=getsp(
-										moveinfo.d
-									),
-									x=getx(step),
-									y=gety(step),
-									hide=moveinfo.hide,
-									flep=moveinfo.flep,
+									sp=getsp(mvinfo.d),
+									x=getx(stp),
+									y=gety(stp),
+									hide=mvinfo.hide,
+									flep=mvinfo.flep,
 								})
 			end
 		end
 		
 		--user move
-		if step>=9 then
+		if stp>=9 then
 			--input timeframe
 			if f%spd>spdh
 			or f%spd<spdl then
 	 			if correct==nil then
-	 				movesp=checkmove(
-	 					movesets[round]
-	 					[movenum].d
-	 				)
+	 				mvsp=checkmv(
+	 					mvsets[rd][mvnum][d])
 	 			end
 	 		--check input
  			else
  				if correct==true
  				and f%spd==spdl then
- 					score+=1
+ 					sc+=1
  				end
  			
  				if correct!=true then
  					checkerr()
- 					movesp=9
+ 					mvsp=9
  				end
  			
- 				movenum=step-7
- 				if (movenum==9) movenum=1
+ 				mvnum=stp-7
+ 				if (mvnum==9) mvnum=1
 			end
 		 
 			--animate curtains
@@ -330,11 +307,11 @@ function updategame()
 	else
 		--init end sequence
 		if f==0 then
-			step=1
-			for move in all(moves) do
-				move.sp=7
+			stp=1
+			for mv in all(mvs) do
+				mv.sp=7
 			end
-			movesp=7
+			mvsp=7
 			sfx(3)
 			sfx(4)
 		end
@@ -344,43 +321,42 @@ function updategame()
 		
 		--rotate the potate
 		if f%fspd==0 then
-			for i,move in pairs(moves)
+			for i,mv in pairs(mvs)
 			do
-				if (step==i*2)	move.dy=-g
+				if (stp==i*2)	mv.dy=-g
 				
-				if step>animend then
-					move.sp=7
+				if stp>animend then
+					mv.sp=7
 				else
-					move.sp=getsp(
-						rotanim[(move.sp-1)/2+1]
-					)
+					mv.sp=getsp(
+						rotanim[(mv.sp-1)/2+1])
 				end
 			end
 			
-			step+=1
+			stp+=1
 		end
 		
 		--jump for joy
-		for move in all(moves) do
-			if move.dy
-			and move.dy<=g do
+		for mv in all(mvs) do
+			if mv.dy
+			and mv.dy<=g do
 				--[[	doing it this way
 						because getting strange
 						0.001 or 0.999 values
 						when using decimals	]]
-				local y=move.y*10
-				y+=move.dy
-				move.dy+=fspd*2
-				move.y=ceil(y)/10
+				local y=mv.y*10
+				y+=mv.dy
+				mv.dy+=fspd*2
+				mv.y=ceil(y)/10
 			end
 		end
 		
 		--wrap up
 		if f==150 then
-			if stage==#movesets then
+			if stg==#mvsets then
 				state="fin"
 			else
-				total+=score
+				tot+=sc
 				state="hold"
 				f=0
 			end
@@ -403,58 +379,53 @@ end
 
 
 function drawgame()
-	--print(step)
 	if instage then
 		print(style..
-			"round "..round,
-			3,4
-		)
+			"round "..rd,
+			3,4)
 	else
 		print(style..
-			"round "..round-1,
-			3,4
-		)
+			"round "..rd-1,
+			3,4)
 	end
 	print(style..
-		score.."/32",
-		3,12
-	)
+		sc.."/32",
+		3,12)
 	
 	--draw base 2x4 grid
 	for i=1,8 do
 		local c=7
 		if instage
-		and ceil(step%8.1)==i then
+		and ceil(stp%8.1)==i then
 			c=12
 		end
 		drawsq(getx(i),gety(i),c)
 	end
 	
 	--draw steps
-	for move in all(moves) do
+	for mv in all(mvs) do
 		local x,y,sp,spshft=
-			move.x,move.y,move.sp,0
+			mv.x,mv.y,mv.sp,0
 		
 		--flipped sprite
-		if move.flep then
+		if mv.flep then
 			sp=fmap[sp]
 			spshft=32
 			--mirror base
 			rectfill(
-				x-1,y-1,x+15,y+16,6
-			)
+				x-1,y-1,x+15,y+16,6)
 		end
 		
 		--demo move
 		spr(sp+spshft,x,y,2,2)
 		
 		--curtain
-		if move.hide then
+		if mv.hide then
 			drawcurtain(x,y,spshft!=0)
 		end
 		
 		--mirror surface
-		if move.flep then
+		if mv.flep then
 			rect(x-1,y-1,x+15,y+16,7)
 			spr(13,x,y,2,2)
 		end
@@ -463,8 +434,8 @@ function drawgame()
 	--draw player
 	drawsq(57,92,7)
 	if instage
-	and step>=9
-	and movesp then
+	and stp>=9
+	and mvsp then
 		local c=7
 		if correct==nil then
 			c=7
@@ -475,8 +446,8 @@ function drawgame()
 		end
 		drawsq(57,92,c)
 	end
-	if movesp then
-		spr(movesp,57,92,2,2)
+	if mvsp then
+		spr(mvsp,57,92,2,2)
 	end
 	
 	--draw smoke
@@ -486,34 +457,33 @@ function drawgame()
  
  --wrap up
 	if not instage
-	and step>animend then
+	and stp>animend then
 		print(big..style..
 			"stage end!",
-			25,29
-		)
+			25,29)
 	end
 end
 -->8
 --functions
-function initmovesets()
+function initmvsets()
 	for i=1,4 do
-		local moveset={}
+		local mvset={}
 		local repcount=0
 		for j=1,8 do
-			local sel=getrndmove()
-			local prev=moveset[j-1]
+			local sel=getrndmv()
+			local prev=mvset[j-1]
 			if (prev) prev=prev.d
 			
 			if sel==prev
 			and repcount==1 then
 				--lower chance of repeats
-				sel=getrndmove()
+				sel=getrndmv()
 			end
 			
 			if repcount==2 then
 				--prevent further repeats
 				while sel==prev do
-					sel=getrndmove()
+					sel=getrndmv()
 				end
 			end
 			
@@ -523,51 +493,51 @@ function initmovesets()
 				repcount-=1
 			end
 			
-			add(moveset,{d=sel})
+			add(mvset,{d=sel})
 		end
 		
 		--add modifiers
 		local hides,fleps={},{}
-		if stage==2 or stage==4 then
-			hides=getmodmoves(i)
+		if stg==2 or stg==4 then
+			hides=getmodmvs(i)
 		end
-		if stage==3 or stage==4 then
-			fleps=getmodmoves(i)
+		if stg==3 or stg==4 then
+			fleps=getmodmvs(i)
 		end
 		
 		for j=1,8 do
 			if intable(hides,j) then
-				moveset[j].hide=true
+				mvset[j].hide=true
 			else
-				moveset[j].hide=false
+				mvset[j].hide=false
 			end
 			if intable(fleps,j) then
-				moveset[j].flep=true
+				mvset[j].flep=true
 			else
-				moveset[j].flep=false
+				mvset[j].flep=false
 			end
 		end
 		
-		add(movesets,moveset)
+		add(mvsets,mvset)
 	end
 end
 
 
-function getrndmove()
+function getrndmv()
 	local ms={⬅️,➡️,⬆️,⬇️}
 	return ms[flr(rnd(4))+1]
 end
 
 
-function getmodmoves(n)
+function getmodmvs(n)
 	local nums={1,2,3,4,5,6,7}
-	local modmoves={}
+	local modmvs={}
 	for i=1,n do
 		local sel=flr(rnd(#nums))+1
-		add(modmoves,nums[sel])
+		add(modmvs,nums[sel])
 		deli(nums,sel)
 	end
-	return modmoves
+	return modmvs
 end
 
 
@@ -594,17 +564,17 @@ function getsp(m)
 end
 
 
-function getx(step)
- return ceil(step%4.1)*21+4
+function getx(stp)
+ return ceil(stp%4.1)*21+4
 end
 
 
-function gety(step)
- return (step\4.1+1)*16+38
+function gety(stp)
+ return (stp\4.1+1)*16+38
 end
 
 
-function checkmove(m)
+function checkmv(m)
 	if btnp()>0 then
 		correct=btnp(m)
 		if not btnp(m) then
@@ -614,7 +584,7 @@ function checkmove(m)
 			return getsp(m)
 		end
 	end
-	return movesp
+	return mvsp
 end
 
 
