@@ -116,113 +116,13 @@ function _draw()
 			15,106)
 	
 	elseif state=="tut" then
-		local ms={⬅️,⬆️,➡️,⬇️}
-		local tstp=f\spd+1
-		local off=0
-		
-		--basics
-		for i=1,4 do
-			local c=
-				(tstp-1)%4+1==i and 12 or 7
-			drawsq(getx(i),gety(i)-28,c)
-			spr(
-				getsp(ms[i]),
-				getx(i),
-				gety(i)-28,
-				2,2)
-			off=tstp-4==i and 57 or 41
-			spr(
-				ms[i]+off,
-				getx(i)+4,
-				gety(i)-8)
-		end
-		
-		line(
-			getx(1)-4,gety(5)-12,
-			getx(4)+18,gety(5)-12,
-			13)
-		line(
-			getx(2)+18,gety(5)-8,
-			getx(2)+18,gety(5)+26,
-			13)
-		
-		--curtain
-		local x,y=
-			getx(5)+11,gety(5)
-		drawsq(x,y,7)
-		spr(getsp(⬇️),x,y,2,2)
-		drawcurtain(x,y)
+		drawtut()
 		print(style..
 			"❎ main",
 			49,106,7)
-		off=tstp==8 and 57 or 41
-		spr(
-			⬇️+off,
-			getx(5)+15,
-			gety(5)+18)
-		
-		--mirror
-		local x,y=
-			getx(7)+11,gety(7)
-		local tstp2=f\(spd*2)+1
-		off=tstp%2==0 and 57 or 41
-		drawsq(x,y,7)
-		rectfill(x-1,y-1,x+15,y+16,6)
-		spr(
-			fmap[getsp(ms[tstp2])]+32,
-			x,y,2,2)
-		rect(x-1,y-1,x+15,y+16,7)
-		spr(13,x,y,2,2)
-		spr(ms[tstp2]+off,x+4,y+18)
-		
-		print(style..
-			"❎ main",
-			49,106,7
-		)
 	
 	elseif state=="hold" then
-		local ns=stg+1
-		local titleset={
-			"",
-			"memorise",
-			"practise",
-			"all together!"
-		}
-		local x=29
-		if (ns==4) x=21
-		print(style..
-			"stage "..ns..
-			": "..titleset[ns],
-			x,25)
-		
-		if ns==2 then
-			spr(getsp(⬇️),58,54,2,2)
-			drawcurtain(58,54)
-			spr(getsp(⬆️),50,62,2,2)
-			if csp==csp0+8 then
-				print("?",60,62,7)
-			end
-			
-		elseif ns==3 then
-			local ms={⬅️,⬆️,➡️,⬇️}
-			local fs={⬅️,⬇️,➡️,⬆️}
-			local x,y=58,54
-			local tstp=f\spd+1
-			
-			drawsq(x,y,7)
-			rectfill(
-				x-1,y-1,x+15,y+16,6)
-			spr(
-				getsp(fs[tstp])+32,
-				x,y,2,2)
-			rect(x-1,y-1,x+15,y+16,7)
-			spr(13,x,y,2,2)
-			spr(
-				getsp(ms[tstp]),
-				50,62,2,2)
-
-		end
-		
+		drawhold()
 		print(style..
 			"🅾️ start      ❎ quit",
 			21,106)
@@ -485,6 +385,111 @@ function drawgame()
 		print(big..style..
 			"stage end!",
 			25,29)
+	end
+end
+-->8
+--animations
+function drawtut()
+	local ms={⬅️,⬆️,➡️,⬇️}
+	local tstp=f\spd+1
+	local off=0
+	
+	--basics
+	for i=1,4 do
+		local c=
+			(tstp-1)%4+1==i and 12 or 7
+		drawsq(getx(i),gety(i)-28,c)
+		spr(
+			getsp(ms[i]),
+			getx(i),
+			gety(i)-28,
+			2,2)
+		off=tstp-4==i and 57 or 41
+		spr(
+			ms[i]+off,
+			getx(i)+4,
+			gety(i)-8)
+	end
+	
+	line(
+		getx(1)-4,gety(5)-12,
+		getx(4)+18,gety(5)-12,
+		13)
+	line(
+		getx(2)+18,gety(5)-8,
+		getx(2)+18,gety(5)+26,
+		13)
+	
+	--curtain
+	local x,y=
+		getx(5)+11,gety(5)
+	drawsq(x,y,7)
+	spr(getsp(⬇️),x,y,2,2)
+	drawcurtain(x,y)
+	off=tstp==8 and 57 or 41
+	spr(
+		⬇️+off,
+		getx(5)+15,
+		gety(5)+18)
+	
+	--mirror
+	local x,y=
+		getx(7)+11,gety(7)
+	local tstp2=f\(spd*2)+1
+	off=tstp%2==0 and 57 or 41
+	drawsq(x,y,7)
+	rectfill(x-1,y-1,x+15,y+16,6)
+	spr(
+		fmap[getsp(ms[tstp2])]+32,
+		x,y,2,2)
+	rect(x-1,y-1,x+15,y+16,7)
+	spr(13,x,y,2,2)
+	spr(ms[tstp2]+off,x+4,y+18)
+end
+
+
+function drawhold()
+	local ns=stg+1
+	local titleset={
+		"",
+		"memorise",
+		"practise",
+		"all together!"
+	}
+	local x=29
+	if (ns==4) x=21
+	print(style..
+		"stage "..ns..
+		": "..titleset[ns],
+		x,25)
+	
+	if ns==2 then
+		spr(getsp(⬇️),58,56,2,2)
+		drawcurtain(58,56)
+		spr(getsp(⬆️),50,64,2,2)
+		if csp==csp0+8 then
+			print("?",60,62,7)
+		end
+		
+	elseif ns==3 then
+		local ms={⬅️,⬆️,➡️,⬇️}
+		local fs={⬅️,⬇️,➡️,⬆️}
+		local x,y=58,56
+		local tstp=f\spd+1
+		
+		drawsq(x,y,7)
+		rectfill(x-1,y-1,x+15,y+16,6)
+		spr(
+			getsp(fs[tstp])+32,
+			x,y,2,2)
+		rect(x-1,y-1,x+15,y+16,7)
+		spr(13,x,y,2,2)
+		spr(
+			getsp(ms[tstp]),
+			50,64,2,2)
+			
+	elseif ns==4 then
+		// stage 4 intermission
 	end
 end
 -->8
