@@ -396,6 +396,9 @@ function drawtut()
 	local off=0
 
 	--basics
+	print(style..
+			"match the beat!",
+			34,16,7)
 	for i=1,4 do
 		local c=
 			(tstp-1)%4+1==i and 12 or 7
@@ -405,11 +408,19 @@ function drawtut()
 			getx(i),
 			gety(i)-28,
 			2,2)
-		off=tstp-4==i and 57 or 41
+		local pressed=tstp-4==i
+		off=pressed and 57 or 41
 		spr(
 			ms[i]+off,
 			getx(i)+4,
 			gety(i)-8)
+		if pressed then
+			oval(getx(i)+3,
+								gety(i)-7,
+								getx(i)+11,
+								gety(i)-1,
+								10)
+		end
 	end
 	
 	line(
@@ -423,21 +434,33 @@ function drawtut()
 	
 	--curtain
 	local x,y=
-		getx(5)+11,gety(5)
+		getx(5)+10,gety(5)+5
+	print(style..
+			"remember!",
+			x-11,y-10,7)
 	drawsq(x,y,7)
 	spr(getsp(⬇️),x,y,2,2)
 	drawcurtain(x,y)
-	off=tstp==8 and 57 or 41
-	spr(
-		⬇️+off,
-		getx(5)+15,
-		gety(5)+18)
+	local pressed=tstp==8
+	off=pressed and 57 or 41
+	spr(⬇️+off,x+4,y+18)
+	if pressed then
+			oval(x+3,
+								y+19,
+								x+11,
+								y+25,
+								10)
+	end
 	
 	--mirror
 	local x,y=
-		getx(7)+11,gety(7)
+		getx(7)+11,gety(7)+5
+	print(style..
+			"opposite!",
+			x-9,y-10,7)
 	local tstp2=f\(spd*2)+1
-	off=tstp%2==0 and 57 or 41
+	local pressed=tstp%2==0
+	off=pressed and 57 or 41
 	drawsq(x,y,7)
 	rectfill(x-1,y-1,x+15,y+16,6)
 	spr(
@@ -446,6 +469,14 @@ function drawtut()
 	rect(x-1,y-1,x+15,y+16,7)
 	spr(13,x,y,2,2)
 	spr(ms[tstp2]+off,x+4,y+18)
+	
+	if pressed then
+			oval(x+3,
+								y+19,
+								x+11,
+								y+25,
+								10)
+	end
 end
 
 
