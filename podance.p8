@@ -77,8 +77,8 @@ function _update()
 			f+=1
 		else
 			mvs,mvsets,mvsp,
-			mvnum,rd,stp,sc,f=
-			{},{},nil,1,1,0,0,0
+			mvnum,rd,stp,sc,f,csp=
+			{},{},nil,1,1,0,0,0,csp0
 			stg+=1
 			initmvsets()
 			state="go"
@@ -469,12 +469,12 @@ function drawhold()
 		drawcurtain(58,56)
 		spr(getsp(⬆️),50,64,2,2)
 		if csp==csp0+8 then
-			print("?",60,63,7)
+			print("?",60,63,10)
 		end
 	
 	elseif ns==3 then
 		local ms={⬅️,⬆️,➡️,⬇️}
-		local fs={⬅️,⬇️,➡️,⬆️}
+		local fs={➡️,⬇️,⬅️,⬆️}
 		local x,y=58,56
 		local tstp=f\spd+1
 		drawsq(x,y,7)
@@ -498,7 +498,7 @@ function drawhold()
 		spr(13,x,y,2,2)
 		spr(getsp(⬆️),50,64,2,2)
 		if csp==csp0+8 then
-			print("!",60,63,7)
+			print("!",60,63,10)
 		end
 	end
 end
