@@ -447,7 +447,9 @@ function drawtut()
 	print(style..
 			"remember!",
 			x-11,y-10,7)
-	drawsq(x,y,7)
+	local c=
+		tstp%4==0 and 12 or 7
+	drawsq(x,y,c)
 	spr(getsp(⬇️),x,y,2,2)
 	drawcurtain(x,y)
 	local pressed=tstp==8
@@ -493,8 +495,8 @@ function drawhold()
 	local ns=stg+1
 	local titleset={
 		"",
-		"memorise",
 		"practise",
+		"memorise",
 		"all together!"
 	}
 	local x=29
@@ -504,7 +506,7 @@ function drawhold()
 		": "..titleset[ns],
 		x,25)
 	
-	if ns==2 then
+	if ns==3 then
 		spr(getsp(⬇️),58,56,2,2)
 		drawcurtain(58,56)
 		spr(getsp(⬆️),50,64,2,2)
@@ -512,7 +514,7 @@ function drawhold()
 			print("?",60,63,15)
 		end
 	
-	elseif ns==3 then
+	elseif ns==2 then
 		local ms={⬅️,⬆️,➡️,⬇️}
 		local fs={➡️,⬇️,⬅️,⬆️}
 		local x,y=58,56
@@ -577,10 +579,10 @@ function initmvsets()
 		
 		--add modifiers
 		local hides,fleps={},{}
-		if stg==2 or stg==4 then
+		if stg==3 or stg==4 then
 			hides=getmodmvs(i)
 		end
-		if stg==3 or stg==4 then
+		if stg==2 or stg==4 then
 			fleps=getmodmvs(i)
 		end
 		
