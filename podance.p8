@@ -31,16 +31,37 @@ function _init()
 	clouds={}
 	grass={}
 	flwrs={}
+	msc=false
+	cy=130
+	cx=128
 	initfield()
 end
 
 
 function _update()
 	if state=="main" then
-		f=0
-		csp=csp0
+		if cy!=121 then
+			cy-=1
+		elseif cx!=-128 then
+			cx-=1
+		else
+			cx=128
+		end
+		if not msc then
+			music(16)
+			msc=true
+		end
 		if (btnp(🅾️)) state="rdy"
 		if (btnp(❎)) state="tut"
+		if btnp(🅾️) or btnp(❎) then
+			sfx(51)
+			f=0
+			csp=csp0
+			cx=128
+			cy=130
+			music(-1)
+			msc=false
+		end
 		
 	elseif state=="tut" then
 		if (f%spd==0) sfx(0)
@@ -53,8 +74,10 @@ function _update()
 			f=0
 			csp=csp0
 		end
-		if (btnp(🅾️)) state="main"
-		if (btnp(❎)) state="main"
+		if btnp(🅾️) or btnp(❎) then
+			sfx(51)
+			state="main"
+		end
 		
 	elseif state=="hold" then
 		f+=1
@@ -67,15 +90,26 @@ function _update()
 			csp+=2
 		end
 		if (f==spd*4)	f=0
-		if (btnp(🅾️)) then
+		if btnp(🅾️) then
+			sfx(51)
+			state="main"
 			f=0
 			state="rdy"
 		end
-		if (btnp(❎)) state="quit"
+		if btnp(❎) then
+			sfx(51)
+			state="quit"
+		end
 		
 	elseif state=="quit" then
-		if (btnp(🅾️)) state="hold"
-		if (btnp(❎)) state="main"
+		if btnp(🅾️) then
+			sfx(51)
+			state="hold"
+		end
+		if btnp(❎) then
+			sfx(51)
+			state="main"
+		end
 		
 	elseif state=="rdy" then
 		if f<spd*8 then
@@ -103,8 +137,16 @@ function _update()
 		updategame()
 		
 	elseif state=="fin" then
-		if (btnp(🅾️)) state="main"
-		if (btnp(❎)) state="main"
+		if not msc then
+			music(16)
+			msc=true
+		end
+		if btnp(🅾️) or btnp(❎) then
+			sfx(51)
+			state="main"
+			music(-1)
+			msc=false
+		end
 	end
 end
 
@@ -126,6 +168,11 @@ function _draw()
 		print(style..
 			"🅾️ start    ❎ tutorial",
 			21,106,9)
+		rectfill(0,cy-3,127,cy+8,2,5)
+		print(style..
+			"♪alan gogoll - "..
+			"goldfish ocean",
+			cx,cy,7)
 	
 	elseif state=="tut" then
 		drawtut()
@@ -180,11 +227,11 @@ function _draw()
 	elseif state=="fin" then
 		print("fin")
 		print("total: "..tot)
-		rrectfill(38,101,52,14,2,6)
+		rrectfill(38,101,52,14,2,5)
 		rrect(38,101,52,14,2,0)
 		print(style..
 			"🅾️/❎ main",
-			44,106,7)
+			44,106,9)
 	end
 end
 -->8
@@ -1407,7 +1454,7 @@ c5180000000000000000000150201502500000150201502500000000001503500000150350000000
 011800001504015045000001504015045000001504015045000001500015040150001504000000150400000013040130450000013040130450000013040130450000000000130400000013040000000c0400e040
 011800001a0450000018045000001f04500000000001a045000001a045180451f045000001a045000001a0001f0401f0400000000000000000000000000000000000000000000000000000000000000000000000
 01180000110401104500000110401104500000110401104500000000001104000000000000000011040100400c0400c0400000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01030000215250000026535000000000000000000000000000000000000000000000000000000000000000001a000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 00 07084344
 00 090a4344
