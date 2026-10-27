@@ -40,6 +40,8 @@ end
 
 function _update()
 	if state=="main" then
+		f+=1
+		if (f==spd*4)	f=0
 		if cy!=121 then
 			cy-=1
 		elseif cx!=-128 then
@@ -137,8 +139,13 @@ function _update()
 		updategame()
 		
 	elseif state=="fin" then
+		f+=1
+		if f==30*spd then
+			f=0
+			music(-1)
+		end
 		if not msc then
-			music(16)
+			music(34)
 			msc=true
 		end
 		if btnp(🅾️) or btnp(❎) then
@@ -157,14 +164,25 @@ function _draw()
 	rectfill(0,0,128,128) --bg
 	color(7)
 	if state=="main" then
+		local ms={⬅️,⬆️,➡️,⬇️}
+		local tstp=f\spd
+		for i=0,5 do
+			for j=-7,4 do
+			local off=i%2*10
+				spr(getsp(
+				ms[(tstp+i)%4+1]),
+				i*23,j*23+f\2+off,2,2)
+			end
+		end
 		rrectfill(28,24,71,21,2,5)
 		rrect(28,24,71,21,2,0)
 		rrectfill(16,101,43,14,2,5)
 		rrect(16,101,43,14,2,0)
 		rrectfill(65,101,52,14,2,5)
 		rrect(65,101,52,14,2,0)
+		local c=tstp%2==0 and 1 or 10
 		print(big..style..
-			"podance",36,30,6)
+			"podance",36,30,c)
 		print(style..
 			"🅾️ start    ❎ tutorial",
 			21,106,9)
@@ -208,7 +226,6 @@ function _draw()
 			
 	
 	elseif state=="rdy" then
-		drawbg(stg+1)
 		rrectfill(50,35,27,19,2,5)
 		rrect(50,35,27,19,2,0)
 		if f<spd*6 then
@@ -225,6 +242,7 @@ function _draw()
 		drawgame()
 		
 	elseif state=="fin" then
+		drawfield()
 		print("fin")
 		print("total: "..tot)
 		rrectfill(38,101,52,14,2,5)
@@ -358,6 +376,7 @@ function updategame()
 		if f==150 then
 			if stg==#mvsets then
 				state="fin"
+				f=0
 			else
 				tot+=sc
 				state="hold"
@@ -383,15 +402,9 @@ end
 
 function drawgame()
 	drawbg(stg)
-	if instage then
-		print(style..
-			"round "..rd,
-			3,4,7)
-	else
-		print(style..
-			"round "..rd-1,
-			3,4,7)
-	end
+	print(style..
+		"stage "..stg,
+		3,4,7)
 	print(style..
 		sc.."/32",
 		3,12,7)
@@ -463,11 +476,11 @@ function drawgame()
  --wrap up
 	if not instage
 	and stp>animend then
-		rrectfill(18,22,91,23,2,5)
-		rrect(18,22,91,23,2,0)
+		rrectfill(12,22,103,23,2,5)
+		rrect(12,22,103,23,2,0)
 		print(big..style..
-			"stage end!",
-			25,29,6)
+			"stage clear!",
+			17,29,10)
 	end
 end
 -->8
@@ -482,7 +495,7 @@ function drawtut()
 	rrect(30,9,67,12,2,0)
 	print(style..
 			"match the beat!",
-			34,13,6)
+			34,13,10)
 	for i=1,4 do
 		local c=
 			(tstp-1)%4+1==i and 12 or 7
@@ -523,7 +536,7 @@ function drawtut()
 	rrect(x-13,61,41,12,2,0)
 	print(style..
 			"remember!",
-			x-10,65,6)
+			x-10,65,10)
 	local c=
 		tstp%4==0 and 12 or 7
 	drawsq(x,y,c)
@@ -547,7 +560,7 @@ function drawtut()
 	rrect(x-12,61,41,12,2,0)
 	print(style..
 			"opposite!",
-			x-9,65,6)
+			x-9,65,10)
 	local tstp2=f\(spd*2)+1
 	local pressed=tstp%2==0
 	off=pressed and 57 or 41
@@ -579,13 +592,12 @@ function drawhold()
 		"perform!"
 	}
 	local x=29
-	drawbg(ns)
 	rrectfill(22,20,82,14,2,5)
 	rrect(22,20,82,14,2,0)
 	print(style..
 		"stage "..ns..
 		": "..titleset[ns],
-		x,25,6)
+		x,25,10)
 	
 	if ns==3 then
 		spr(getsp(⬇️),58,56,2,2)
